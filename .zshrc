@@ -14,6 +14,33 @@ alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
 alias y4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
+function gitupload() {
+    cd ~/termux_config || return
+    git add .
+    git commit -m "$1"
+    git push origin
+}
+
+function auto-update-git() {
+    # Path to your local Git repository
+    REPO_PATH="/data/data/com.termux/files/home/termux_config"
+
+    # Move to the repository directory
+    cd $REPO_PATH || return
+
+    # Copy the updated .zshrc file to the repository
+    cp ~/.zshrc $REPO_PATH
+
+    # Check if there are changes
+    if [[ `git status --porcelain` ]]; then
+        git add .zshrc
+        git commit -m "Auto-update .zshrc"
+        git push origin
+    else
+        echo "No changes detected in .zshrc"
+    fi
+}
+
 songcut() {
     local temp_output_file="_temp_output.mp3"
 
