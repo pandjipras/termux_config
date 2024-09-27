@@ -16,9 +16,29 @@ alias y4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s
 
 function gitupload() {
     cd ~/termux_config || return
+
+    # Menambahkan semua file ke staging
     git add .
-    git commit -m "$1"
-    git push origin
+
+    # Mengecek status Git untuk menentukan apakah ada perubahan
+    if [[ $(git status --porcelain) ]]; then
+        # Menampilkan daftar file yang ditambahkan atau diubah
+        echo "Berikut adalah file yang akan di-commit:"
+        git status --porcelain | awk '{print $2}' # Menampilkan nama file
+
+        # Meminta input pesan commit dari pengguna
+        echo "Masukkan pesan commit (tekan ENTER untuk default 'auto'): "
+        read message
+
+        # Menggunakan pesan commit default jika tidak ada input
+        message="${message:-auto}"
+
+        # Melakukan commit
+        git commit -m "$message"
+        git push origin # Ganti 'main' dengan branch yang sesuai jika perlu
+    else
+        echo "Tidak ada perubahan yang terdeteksi."
+    fi
 }
 
 function auto-update-git() {
