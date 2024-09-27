@@ -16,4 +16,4 @@ if [[ `git status --porcelain` ]]; then
     git push origin
 else
     echo "No changes detected in .zshrc"
-i
+fi
