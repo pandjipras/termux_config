@@ -4,14 +4,15 @@ plugins=(git zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 
+alias rel="omz reload"
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
 alias ll="ls -lah"
 alias rmf="rm -rf"
 alias upd="apt update && apt upgrade"
 alias ins="apt install"
-alias ytmp3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
-alias ytmp4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
+alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
+alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
 songcut() {
     local temp_output_file="_temp_output.mp3"
@@ -59,3 +60,127 @@ volup() {
 
     ffmpeg -i "$input_file" -filter:a "volume=$volume_level" "$output_file"
 }
+
+# Fungsi untuk menghitung harga per 1 gram atau ml dengan input harga dalam rupiah penuh
+compare_prices() {
+    # Fungsi untuk menghitung harga per 1 gram/ml
+    calculate_price_per_unit() {
+        local price=$1
+        local weight=$2
+        echo "scale=2; $price / $weight" | bc
+    }
+
+    # Input harga, berat, dan nama produk A
+    echo "Masukkan harga, berat, dan nama produk A (contoh: 100000 250 Produk A):"
+    read price_a weight_a name_a
+    if [ -z "$name_a" ]; then
+        name_a="Produk A"  # Default label jika nama tidak diberikan
+    fi
+
+    # Input harga, berat, dan nama produk B
+    echo "Masukkan harga, berat, dan nama produk B (contoh: 5500 500 Produk B):"
+    read price_b weight_b name_b
+    if [ -z "$name_b" ]; then
+        name_b="Produk B"  # Default label jika nama tidak diberikan
+    fi
+
+    # Hitung harga per unit
+    price_per_unit_a=$(calculate_price_per_unit $price_a $weight_a)
+    price_per_unit_b=$(calculate_price_per_unit $price_b $weight_b)
+
+    # Tampilkan hasil
+    echo "Harga per gram/ml $name_a: Rp $price_per_unit_a"
+    echo "Harga per gram/ml $name_b: Rp $price_per_unit_b"
+
+    # Membandingkan kedua harga dan menghitung perbedaan persentase
+    if (( $(echo "$price_per_unit_a < $price_per_unit_b" | bc -l) )); then
+        difference=$(echo "scale=2; (($price_per_unit_b - $price_per_unit_a) / $price_per_unit_b) * 100" | bc)
+        echo "$name_a lebih murah dari $name_b sebesar $difference%."
+    elif (( $(echo "$price_per_unit_a > $price_per_unit_b" | bc -l) )); then
+        difference=$(echo "scale=2; (($price_per_unit_a - $price_per_unit_b) / $price_per_unit_a) * 100" | bc)
+        echo "$name_b lebih murah dari $name_a sebesar $difference%."
+    else
+        echo "Kedua produk memiliki harga yang sama per gram/ml."
+    fi
+}
+
+tabungan() {
+  while true; do
+    # Meminta input per hari menabung dan nominal tabungan
+    echo -n "Tabungan per hari (ketik tanpa ribuan): "
+    read per_hari
+
+    echo -n "Nominal yang akan ditabung (ketik tanpa ribuan): "
+    read nominal
+
+    # Mengkonversi input singkatan menjadi angka
+    nominal=$(echo $nominal | sed 's/jt/*1000000/g' | sed 's/rb/*1000/g' | bc)
+    
+    # Menghitung jumlah hari yang diperlukan
+    total_hari=$(echo "$nominal / $per_hari" | bc)
+
+    # Menghitung durasi dalam tahun, bulan, dan hari
+    tahun=$((total_hari / 365))
+    sisa_hari=$((total_hari % 365))
+    bulan=$((sisa_hari / 30))
+    hari=$((sisa_hari % 30))
+
+    # Menampilkan hasil
+    hasil=""
+    if (( tahun > 0 )); then
+      hasil="${tahun} tahun "
+    fi
+    if (( bulan > 0 )); then
+      hasil="${hasil}${bulan} bulan "
+    fi
+    if (( hari > 0 )); then
+      hasil="${hasil}${hari} hari"
+    fi
+
+    echo "Hasil: ${hasil}"
+    echo
+    # Mengulang proses
+    echo "Tekan Ctrl+C untuk keluar atau tekan Enter untuk melanjutkan."
+    read
+  done
+}
+
+battery_usage_time() {
+    # Input watt
+    echo "Masukkan daya beban (Watt):"
+    read watt
+    
+    # Input volt dan aH dalam satu baris
+    echo "Masukkan voltase baterai dan kapasitas baterai (Volt aH):"
+    read volt ah
+
+    # Menghitung total kapasitas energi baterai dalam watt-hour (Wh)
+    total_energy=$(echo "$volt * $ah" | bc)
+
+    # Menghitung berapa lama baterai bisa bertahan (jam)
+    usage_time=$(echo "scale=2; $total_energy / $watt" | bc)
+
+    # Output hasil
+    echo "Baterai akan bertahan selama: $usage_time jam."
+}
+
+# Tambahkan ke dalam .zshrc atau jalankan langsung
+hitung_kwh() {
+  local waktu_penggunaan jam_penggunaan daya kwh biaya_per_kwh total_biaya total_kwh
+  
+  echo "Masukkan daya perangkat (dalam Watt): "
+  read daya
+  echo "Masukkan durasi penggunaan (dalam jam): "
+  read jam_penggunaan
+  
+  # Menghitung penggunaan kWh
+  kwh=$(echo "scale=2; $daya * $jam_penggunaan / 1000" | bc)  # Mengonversi Watt ke kWh, dengan 2 angka di belakang koma
+  
+  biaya_per_kwh=1400
+  total_biaya=$(echo "scale=2; $kwh * $biaya_per_kwh" | bc)  # Menghitung total biaya dengan 2 angka di belakang koma
+  
+  printf "Total penggunaan kWh: %.2f kWh\n" "$kwh"
+  printf "Total biaya: Rp %.2f\n" "$total_biaya"
+}
+
+# Panggil fungsi untuk menghitung kWh dan biaya
