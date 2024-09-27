@@ -230,4 +230,3 @@ hitung_kwh() {
   printf "Total biaya: Rp %.2f\n" "$total_biaya"
 }
 
-# Panggil fungsi untuk menghitung kWh dan biaya
