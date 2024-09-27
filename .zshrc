@@ -12,7 +12,7 @@ alias rmf="rm -rf"
 alias upd="apt update && apt upgrade"
 alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
-alias y4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
+alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
 songcut() {
     local temp_output_file="_temp_output.mp3"
