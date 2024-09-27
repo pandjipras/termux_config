@@ -41,7 +41,7 @@ function gitupload() {
     fi
 }
 
-function auto-update-git() {
+function auto-update-zshrc() {
     # Path to your local Git repository
     REPO_PATH="/data/data/com.termux/files/home/termux_config"
 
