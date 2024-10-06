@@ -27,7 +27,7 @@ function reload-zsh() {
     omz reload
 
     # Return to home directory
-    cd ~ || echo "Failed to return to home directory"
+    cd /data/data/com.termux/files/home/ || echo "Failed to return to home directory"
 }
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
