@@ -21,8 +21,8 @@ function reload-zsh() {
     else
         echo "No changes detected in .zshrc"
     fi
-    # Return to home directory
-    exec cd ~
+    # Kembali ke home directory sebelum reload Zsh
+    cd ~ || { echo "Failed to return to home directory"; return; }
     # Reload Zsh
     echo "Reloading Zsh..."
     omz reload
