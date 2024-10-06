@@ -63,27 +63,6 @@ function git-upload() {
     fi
 }
 
-function auto-sync-github() {
-    echo "Auto-syncing .zshrc to GitHub..."
-    REPO_PATH="/data/data/com.termux/files/home/termux_config"
-    cd $REPO_PATH || { echo "Failed to change directory"; return; }
-
-    # Copy the updated .zshrc file to the repository
-    cp ~/.zshrc $REPO_PATH || { echo "Failed to copy .zshrc"; return; }
-
-    # Check if there are changes
-    if [[ `git status --porcelain` ]]; then
-        git add .zshrc
-        git commit -m "Auto-update .zshrc"
-        git push origin || { echo "Failed to push to GitHub"; return; }
-    else
-        echo "No changes detected in .zshrc"
-    fi
-}
-
-# Eksekusi otomatis ketika Termux dibuka
-auto-sync-github
-
 songcut() {
     local temp_output_file="_temp_output.mp3"
 
