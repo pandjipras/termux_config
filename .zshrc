@@ -4,7 +4,28 @@ plugins=(git zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 
-alias rel="omz reload"
+#alias rel="omz reload"
+function rel() {
+    echo "Syncing .zshrc to GitHub..."
+    REPO_PATH="/data/data/com.termux/files/home/termux_config"
+    cd $REPO_PATH || { echo "Failed to change directory"; return; }
+
+    # Copy the updated .zshrc file to the repository
+    cp ~/.zshrc $REPO_PATH || { echo "Failed to copy .zshrc"; return; }
+
+    # Check if there are changes
+    if [[ `git status --porcelain` ]]; then
+        git add .zshrc
+        git commit -m "Auto-update .zshrc"
+        git push origin || { echo "Failed to push to GitHub"; return; }
+    else
+        echo "No changes detected in .zshrc"
+    fi
+
+    # Setelah sinkronisasi, reload Zsh
+    echo "Reloading Zsh..."
+    omz reload
+}
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
 alias ll="ls -lah"
@@ -142,11 +163,14 @@ compare_prices() {
     # Membandingkan kedua harga dan menghitung perbedaan persentase
     if (( $(echo "$price_per_unit_a < $price_per_unit_b" | bc -l) )); then
         difference=$(echo "scale=2; (($price_per_unit_b - $price_per_unit_a) / $price_per_unit_b) * 100" | bc)
+        echo
         echo "$name_a lebih murah dari $name_b sebesar $difference%."
     elif (( $(echo "$price_per_unit_a > $price_per_unit_b" | bc -l) )); then
         difference=$(echo "scale=2; (($price_per_unit_a - $price_per_unit_b) / $price_per_unit_a) * 100" | bc)
+        echo
         echo "$name_b lebih murah dari $name_a sebesar $difference%."
     else
+        echo
         echo "Kedua produk memiliki harga yang sama per gram/ml."
     fi
 }
