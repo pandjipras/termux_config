@@ -5,7 +5,7 @@ plugins=(git zsh-autosuggestions)
 source $ZSH/oh-my-zsh.sh
 
 #alias rel="omz reload"
-function rel() {
+function reload-zsh() {
     echo "Syncing .zshrc to GitHub..."
     REPO_PATH="/data/data/com.termux/files/home/termux_config"
     cd $REPO_PATH || { echo "Failed to change directory"; return; }
@@ -22,9 +22,12 @@ function rel() {
         echo "No changes detected in .zshrc"
     fi
 
-    # Setelah sinkronisasi, reload Zsh
+    # Reload Zsh
     echo "Reloading Zsh..."
     omz reload
+
+    # Return to home directory
+    cd ~ || echo "Failed to return to home directory"
 }
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
