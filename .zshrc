@@ -59,7 +59,7 @@ function git-upload() {
         git commit -m "$message"
         git push origin # Ganti 'main' dengan branch yang sesuai jika perlu
     else
-        echo "Tidak ada perubahan yang terdeteksi."
+        echo "Tidak ada perubahan yang terdeteksi"
     fi
 }
 
