@@ -21,13 +21,11 @@ function reload-zsh() {
     else
         echo "No changes detected in .zshrc"
     fi
-
+    # Return to home directory
+    exec cd ~
     # Reload Zsh
     echo "Reloading Zsh..."
     omz reload
-
-    # Return to home directory
-    exec cd ~
 }
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
