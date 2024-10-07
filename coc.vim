@@ -74,7 +74,7 @@ endfunction
 " Highlight the symbol and its references when holding the cursor.
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
-" Symbol renaming.
+" Symbol renamin.
 nmap <leader>rn <Plug>(coc-rename)
 
 " Formatting selected code.
@@ -100,7 +100,7 @@ nmap <leader>ac  <Plug>(coc-codeaction)
 nmap <leader>qf  <Plug>(coc-fix-current)
 
 " Map function and class text objects
-" NOTE: Requires 'textDocument.documentSymbol' support from the language server.
+" NOTE:Requires 'textDocument.documentSymbol' support from the language server.
 xmap if <Plug>(coc-funcobj-i)
 omap if <Plug>(coc-funcobj-i)
 xmap af <Plug>(coc-funcobj-a)
