@@ -27,6 +27,7 @@ function reload-zsh() {
     echo "Reloading Zsh..."
     omz reload
 }
+
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="/data/data/com.termux/files/home/nvim/init.vim"
 alias nvimconfigkeymap="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
@@ -217,7 +218,6 @@ battery_usage_time() {
     echo "Baterai akan bertahan selama: $usage_time jam."
 }
 
-# Tambahkan ke dalam .zshrc atau jalankan langsung
 hitung_kwh() {
   local waktu_penggunaan jam_penggunaan daya kwh biaya_per_kwh total_biaya total_kwh
   
