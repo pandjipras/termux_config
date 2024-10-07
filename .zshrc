@@ -28,7 +28,8 @@ function reload-zsh() {
     omz reload
 }
 alias zshconfig="nvim ~/.zshrc"
-alias nvimconfig="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
+alias nvimconfig="/data/data/com.termux/files/home/nvim/init.vim"
+alias nvimconfigkeymap="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
 alias ll="ls -lah"
 alias rmf="rm -rf"
 alias upd="apt update && apt upgrade"
