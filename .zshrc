@@ -4,7 +4,6 @@ plugins=(git zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 
-#alias rel="omz reload"
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="/data/data/com.termux/files/home/nvim/init.vim"
 alias nvimconfigkeymap="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
