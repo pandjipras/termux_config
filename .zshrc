@@ -198,7 +198,7 @@ tabungan() {
   done
 }
 
-battery_usage_time() {
+perkiraan_pemakaian_battery() {
     # Input watt
     echo "Masukkan daya beban (Watt):"
     read watt
