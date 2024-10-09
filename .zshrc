@@ -15,29 +15,6 @@ alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
 alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
-reload-zsh() {
-    echo "Syncing .zshrc to GitHub..."
-    REPO_PATH="/data/data/com.termux/files/home/termux_config"
-    cd $REPO_PATH || { echo "Failed to change directory"; return; }
-
-    # Copy the updated .zshrc file to the repository
-    cp ~/.zshrc $REPO_PATH || { echo "Failed to copy .zshrc"; return; }
-
-    # Check if there are changes
-    if [[ `git status --porcelain` ]]; then
-        git add .zshrc
-        git commit -m "Auto-update .zshrc"
-        git push origin || { echo "Failed to push to GitHub"; return; }
-    else
-        echo "No changes detected in .zshrc"
-    fi
-    # Kembali ke home directory sebelum reload Zsh
-    cd ~ || { echo "Failed to return to home directory"; return; }
-    # Reload Zsh
-    echo "Reloading Zsh..."
-    omz reload
-}
-
 git-upload() {
     cd ~/termux_config || return
 
