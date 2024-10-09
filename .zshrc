@@ -5,7 +5,17 @@ plugins=(git zsh-autosuggestions)
 source $ZSH/oh-my-zsh.sh
 
 #alias rel="omz reload"
-function reload-zsh() {
+alias zshconfig="nvim ~/.zshrc"
+alias nvimconfig="/data/data/com.termux/files/home/nvim/init.vim"
+alias nvimconfigkeymap="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
+alias ll="ls -lah"
+alias rmf="rm -rf"
+alias upd="apt update && apt upgrade"
+alias ins="apt install"
+alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
+alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
+
+reload-zsh() {
     echo "Syncing .zshrc to GitHub..."
     REPO_PATH="/data/data/com.termux/files/home/termux_config"
     cd $REPO_PATH || { echo "Failed to change directory"; return; }
@@ -28,17 +38,7 @@ function reload-zsh() {
     omz reload
 }
 
-alias zshconfig="nvim ~/.zshrc"
-alias nvimconfig="/data/data/com.termux/files/home/nvim/init.vim"
-alias nvimconfigkeymap="nvim /data/data/com.termux/files/home/.config/nvim/general/maps.vim"
-alias ll="ls -lah"
-alias rmf="rm -rf"
-alias upd="apt update && apt upgrade"
-alias ins="apt install"
-alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
-alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
-
-function git-upload() {
+git-upload() {
     cd ~/termux_config || return
 
     # Menambahkan semua file ke staging
@@ -113,7 +113,7 @@ volup() {
 }
 
 # Fungsi untuk menghitung harga per 1 gram atau ml dengan input harga dalam rupiah penuh
-compare_prices() {
+perbandingan_harga() {
     # Fungsi untuk menghitung harga per 1 gram/ml
     calculate_price_per_unit() {
         local price=$1
