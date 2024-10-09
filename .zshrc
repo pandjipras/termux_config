@@ -112,7 +112,6 @@ volup() {
     ffmpeg -i "$input_file" -filter:a "volume=$volume_level" "$output_file"
 }
 
-# Fungsi untuk menghitung harga per 1 gram atau ml dengan input harga dalam rupiah penuh
 perbandingan_harga() {
     # Fungsi untuk menghitung harga per 1 gram/ml
     calculate_price_per_unit() {
