@@ -14,6 +14,7 @@ alias upd="apt update && apt upgrade"
 alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
 alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
+
 reload-zsh() {
     echo "Syncing .zshrc to GitHub..."
     REPO_PATH="/data/data/com.termux/files/home/termux_config"
