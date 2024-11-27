@@ -213,3 +213,6 @@ hitung_kwh() {
   printf "Total biaya: Rp %.2f\n" "$total_biaya"
 }
 
+
+
+neofetch
