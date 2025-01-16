@@ -14,7 +14,7 @@ alias upd="apt update && apt upgrade"
 alias ytdlp_upd="pip install --upgrade yt-dlp"
 alias ins="apt install"
 #alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
-alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<artist>.+) - (?P<title>.+)' -o '/storage/emulated/0/Music/%(artist,NA)s - %(title)s.%(ext)s' --exec 'python3 -c \"import os, sys; from mutagen.easyid3 import EasyID3; file=sys.argv[1]; meta=EasyID3(file); meta.update({k: [v.lower().title() for v in vals] for k, vals in meta.items()}); meta.save(); new_name=os.path.join(os.path.dirname(file), os.path.basename(file).lower().title()); os.rename(file, new_name)\"'"
+alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<artist>.+) - (?P<title>.+)' -o '/storage/emulated/0/Music/%(artist,NA)s - %(title)s.%(ext)s' --exec 'python3 -c \"import os; from mutagen.easyid3 import EasyID3; f=EasyID3(\\\"{}\\\"); f[\\\"title\\\"] = [f[\\\"title\\\"][0].title()]; f[\\\"artist\\\"] = [f[\\\"artist\\\"][0].title()]; f.save(); os.rename(\\\"{}\\\", \\\"{}\\\".title())\"'"
 #alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 alias yt4="yt-dlp -f 'bestvideo+bestaudio' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
