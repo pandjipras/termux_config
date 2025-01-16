@@ -14,7 +14,7 @@ alias upd="apt update && apt upgrade"
 alias ytdlp_upd="pip install --upgrade yt-dlp"
 alias ins="apt install"
 #alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress -o '/storage/emulated/0/Music/%(artist)s - %(title)s.%(ext)s'"
-alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<artist>.+) - (?P<title>.+)' -o '/storage/emulated/0/Music/%(artist,NA)s - %(title)s.%(ext)s'"
+alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<artist>.+) - (?P<title>.+)' -o '/storage/emulated/0/Music/%(artist,NA)s - %(title)s.%(ext)s' --exec 'python3 -c \"import os, sys; from mutagen.easyid3 import EasyID3; file=sys.argv[1]; meta=EasyID3(file); for k, v in meta.items(): meta[k] = [w.title() for w in v]; meta.save(); os.rename(file, os.path.join(os.path.dirname(file), os.path.basename(file).title()))\"'"
 #alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 alias yt4="yt-dlp -f 'bestvideo+bestaudio' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
