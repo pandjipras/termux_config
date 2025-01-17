@@ -7,6 +7,7 @@ plugins=(git zsh-autosuggestions)
 source $ZSH/oh-my-zsh.sh
 
 alias r="omz reload"
+alias x="exit"
 alias rgr="ranger"
 alias zshconfig="nvim ~/.zshrc"
 alias nvimconfig="/data/data/com.termux/files/home/nvim/init.vim"
