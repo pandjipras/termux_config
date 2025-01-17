@@ -52,35 +52,83 @@ autocmd VimEnter *
   \|   PlugInstall --sync | q
   \| endif
 
-" auto save file ke github
-augroup autosync_github
-  autocmd!
-  " Amati file *.vim, *.zshrc, *.vimrc, dan *.sh
-  autocmd BufWritePost *.vim,*.zshrc,*.vimrc,*.sh call SyncWithGithub()
-augroup END
+ ""auto save file ke github
+"augroup autosync_github
+  "autocmd!
+  "" amati file *.vim, *.zshrc, *.vimrc, dan *.sh
+  "autocmd bufwritepost *.vim,*.zshrc,*.vimrc,*.sh call syncwithgithub()
+"augroup end
 
-function! SyncWithGithub()
-  let repo_path = '/data/data/com.termux/files/home/termux_config'
+"function! syncwithgithub()
+  "let repo_path = '/data/data/com.termux/files/home/termux_config'
 
-  " Perform git pull to sync local state with remote
-  let pull_result = system('git -C ' . repo_path . ' pull origin master')
-  echo pull_result
+  "" perform git pull to sync local state with remote
+  "let pull_result = system('git -c ' . repo_path . ' pull origin master')
+  "echo pull_result
 
-  " Stage all modified files
-  let add_result = system('git -C ' . repo_path . ' add .')  " Tambahkan semua perubahan
-  echo add_result
+  "" stage all modified files
+  "let add_result = system('git -c ' . repo_path . ' add .')  " tambahkan semua perubahan
+  "echo add_result
 
-  " Commit the changes with a message
-  let commit_msg = 'Auto-sync after saving ' . expand('%:t')
-  let commit_result = system('git -C ' . repo_path . " commit -m '" . commit_msg . "'")
-  echo commit_result
+  "" commit the changes with a message
+  "let commit_msg = 'auto-sync after saving ' . expand('%:t')
+  "let commit_result = system('git -c ' . repo_path . " commit -m '" . commit_msg . "'")
+  "echo commit_result
 
-  " Push changes to GitHub
-  let push_result = system('git -C ' . repo_path . ' push origin master')
-  echo push_result
-endfunction
+  "" push changes to github
+  "let push_result = system('git -c ' . repo_path . ' push origin master')
+  "echo push_result
+"endfunction
 
-" auto save zshrc di dalam neovim
+"" auto save zshrc di dalam neovim
+"augroup autosync_zshrc
+  "autocmd!
+  "" amati file .zshrc untuk autosync
+  "autocmd bufwritepost *.zshrc call synczshrcwithgithub()
+"augroup end
+
+"function! synczshrcwithgithub()
+  "let repo_path = '/data/data/com.termux/files/home/termux_config'
+
+  "" print a message indicating the sync process
+  "echo "syncing .zshrc to github..."
+
+  "" copy the updated .zshrc file to the repository
+  "let copy_result = system('cp ~/.zshrc ' . repo_path)
+  "if v:shell_error
+    "echo "failed to copy .zshrc"
+    "return
+  "endif
+
+  "" perform git status check to see if there are changes
+  "let status = system('git -c ' . repo_path . ' status --porcelain')
+  "if status != ''
+    "" stage .zshrc, commit, and push changes if any are detected
+    "let add_result = system('git -c ' . repo_path . ' add .zshrc > /dev/null 2>&1')
+    "let commit_result = system('git -c ' . repo_path . " commit -m 'auto-update .zshrc' > /dev/null 2>&1")
+    "if v:shell_error
+      "echo "failed to commit changes"
+      "return
+    "else
+      "" display the detailed file change summary
+      "let commit_details = system('git -c ' . repo_path . ' show --stat --oneline -1')
+      "echo commit_details
+    "endif
+
+    "" push the changes, suppressing unnecessary output
+    "let push_result = system('git -c ' . repo_path . ' push --quiet origin master')
+    "if v:shell_error
+      "echo "failed to push to github"
+      "return
+    "else
+      "echo "pushed to github successfully"
+    "endif
+  "else
+    "" no changes detected
+    "echo "no changes detected in .zshrc"
+  "endif
+"endfunction
+
 augroup autosync_zshrc
   autocmd!
   " Amati file .zshrc untuk autosync
@@ -104,22 +152,17 @@ function! SyncZshrcWithGithub()
   let status = system('git -C ' . repo_path . ' status --porcelain')
   if status != ''
     " Stage .zshrc, commit, and push changes if any are detected
-    let add_result = system('git -C ' . repo_path . ' add .zshrc > /dev/null 2>&1')
-    let commit_result = system('git -C ' . repo_path . " commit -m 'Auto-update .zshrc' > /dev/null 2>&1")
-    if v:shell_error
-      echo "Failed to commit changes"
-      return
-    else
-      " Display the detailed file change summary
-      let commit_details = system('git -C ' . repo_path . ' show --stat --oneline -1')
-      echo commit_details
-    endif
+    call system('git -C ' . repo_path . ' add .zshrc > /dev/null 2>&1')
+    call system('git -C ' . repo_path . " commit -m 'Auto-update .zshrc' > /dev/null 2>&1")
+    
+    " Dlay the detailed file change summary
+    let commit_details = system('git -C ' . repo_path . ' show --stat --oneline -1')
+    echo commit_details
 
     " Push the changes, suppressing unnecessary output
     let push_result = system('git -C ' . repo_path . ' push --quiet origin master')
     if v:shell_error
       echo "Failed to push to GitHub"
-      return
     else
       echo "Pushed to GitHub successfully"
     endif
