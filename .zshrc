@@ -14,7 +14,7 @@ alias upd="apt update && apt upgrade"
 alias ytdlp_upd="pip install --upgrade yt-dlp"
 alias ins="apt install"
 #alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<title>[^-]+) - (?P<artist>[^(|]+)' -o '/storage/emulated/0/Music/%(artist,Unknown)s - %(title)s.%(ext)s'"
-alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<title>[^-]+) - (?P<artist>[^(|]+)' --output '/storage/emulated/0/Music/%(artist,Unknown)s - %(title)s.%(ext)s' --exec 'rename \"s/  +/ /g\" \"{}\"'"
+alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<title>[^-]+) - (?P<artist>[^(|]+)' --output '/storage/emulated/0/Music/%(artist,Unknown)s - %(title)s.%(ext)s' --exec 'mv \"{}\" \"$(echo \"{}\" | sed \"s/  \+/ /g\")\"'"
 #alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 alias yt4="yt-dlp -f 'bestvideo+bestaudio' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
