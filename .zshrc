@@ -1,6 +1,6 @@
 export ZSH="$HOME/.oh-my-zsh"
-export EDITOR="/data/data/com.termux/files/home/.config/nvim/init.vim"
-export VISUAL="/data/data/com.termux/files/home/.config/nvim/nvim"
+export EDITOR="/data/data/com.termux/files/usr/bin/nvim"
+export VISUAL="/data/data/com.termux/files/usr/bin/nvim"
 ZSH_THEME="robbyrussell"
 plugins=(git zsh-autosuggestions)
 
