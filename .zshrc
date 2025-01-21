@@ -54,15 +54,13 @@ yt4cut() {
     fi
 
     echo "Processing video with ffmpeg..."
-    {
-        ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-               -loglevel quiet \
-               "$FINAL_OUTPUT" >/dev/null 2>&1
-    } &
+    ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
+           -loglevel quiet "$FINAL_OUTPUT" >/dev/null 2>&1 &
+    FF_PID=$!
 
     # Display a loading animation while FFmpeg runs
     animation="/-\|"
-    while ps | grep -q "[f]fmpeg"; do
+    while ps -p $FF_PID > /dev/null; do
         for i in {0..3}; do
             printf "\rProcessing... %s" "${animation:$i:1}"
             sleep 0.2
