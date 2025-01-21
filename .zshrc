@@ -43,29 +43,30 @@ yt4cut() {
     # Nama file output menggunakan waktu normal dengan ":"
     OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}.mp4"
     
-    # Animasi loading
-    animation="|/-\\"
-    i=0
-    while true; do
-        # Menulis animasi loading di terminal
-        echo -n "\r${animation[i % ${#animation}]} Downloading..."
-        i=$(( (i + 1) % ${#animation} ))
-        sleep 0.1
+    # Fungsi untuk animasi loading
+    loading_animation() {
+        animation="|/-\\"
+        i=0
+        while kill -0 $1 2>/dev/null; do
+            echo -ne "\r${animation:i++%${#animation}:1} Downloading..."
+            sleep 0.1
+        done
+        echo -ne "\rDownload selesai!                  \n"
+    }
 
-        # Cek apakah file output sudah ada, jika ya, hentikan animasi dan lanjutkan
-        if [ -f "$OUTPUT_FILE" ]; then
-            break
-        fi
-    done
-
-    # Download video dan audio
+    # Jalankan yt-dlp dengan animasi loading
     yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
            --recode-video mp4 \
            --audio-quality 0 \
            --download-sections "*${START_TIME:0:2}:${START_TIME:2:2}-${END_TIME:0:2}:${END_TIME:2:2}" \
            --merge-output-format mp4 \
            -o "$OUTPUT_FILE" \
-           "$URL"
+           "$URL" &
+
+    # Dapatkan PID proses yt-dlp dan jalankan animasi
+    YT_PID=$!
+    loading_animation $YT_PID
+    wait $YT_PID
 
     # Periksa apakah file output ada
     if [ ! -f "$OUTPUT_FILE" ]; then
@@ -81,7 +82,7 @@ yt4cut() {
     rm "$OUTPUT_FILE"
 
     # Menampilkan hasil akhir setelah proses selesai
-    echo -e "\nVideo berhasil diunduh dan disinkronkan: $FINAL_OUTPUT"
+    echo -e "Video berhasil diunduh dan disinkronkan: $FINAL_OUTPUT"
 }
 #yt4cut() {
     #if [ $# -lt 3 ]; then
