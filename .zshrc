@@ -46,7 +46,7 @@ yt4cut() {
            --download-sections "*${FORMATTED_START_TIME}-${FORMATTED_END_TIME}" \
            --merge-output-format mp4 \
            -o "$OUTPUT_FILE" \
-           "$URL" >/dev/null 2>&1
+           "$URL" > /dev/null 2>&1  # Mengalihkan semua output ke /dev/null
 
     if [ ! -f "$OUTPUT_FILE" ]; then
         echo "Error: Download failed or file not found."
@@ -54,8 +54,9 @@ yt4cut() {
     fi
 
     echo "Processing video with ffmpeg..."
-    ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-           -loglevel quiet "$FINAL_OUTPUT" >/dev/null 2>&1 &  # Menyembunyikan log ffmpeg
+    nohup ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
+           -loglevel quiet "$FINAL_OUTPUT" > /dev/null 2>&1 &  # Menyembunyikan semua output
+
     FF_PID=$!
 
     # Menampilkan animasi loading saat FFmpeg berjalan
