@@ -55,14 +55,14 @@ yt4cut() {
 
     echo "Processing video with ffmpeg..."
     nohup ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-           -loglevel quiet "$FINAL_OUTPUT" >/dev/null 2>&1 &  # Menyembunyikan output ffmpeg
+           -loglevel quiet "$FINAL_OUTPUT" &  # Menyembunyikan output ffmpeg
 
-    FF_PID=$!
-    disown $FF_PID  # Mengeluarkan proses dari terminal untuk menghindari pid output
+    # Menunggu proses ffmpeg selesai
+    wait $!  # Menunggu hingga proses ffmpeg selesai
 
     # Menampilkan animasi loading saat FFmpeg berjalan
     animation="/-\|"
-    while ps -p $FF_PID > /dev/null; do
+    while ps -p $! > /dev/null; do
         for i in {0..3}; do
             printf "\rProcessing... %s" "${animation:$i:1}"
             sleep 0.2
