@@ -55,10 +55,10 @@ yt4cut() {
 
     echo "Processing video with ffmpeg..."
     ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-           -loglevel quiet "$FINAL_OUTPUT" >/dev/null 2>&1 &
+           -loglevel quiet "$FINAL_OUTPUT" >/dev/null 2>&1 &  # Menyembunyikan log ffmpeg
     FF_PID=$!
 
-    # Display a loading animation while FFmpeg runs
+    # Menampilkan animasi loading saat FFmpeg berjalan
     animation="/-\|"
     while ps -p $FF_PID > /dev/null; do
         for i in {0..3}; do
@@ -66,14 +66,14 @@ yt4cut() {
             sleep 0.2
         done
     done
-    printf "\rProcessing... Done!\n"
+    printf "\rProcessing... Done!                \n"  # Membersihkan animasi setelah selesai
 
     if [ ! -f "$FINAL_OUTPUT" ]; then
         echo "Error: FFmpeg process failed."
         return 1
     fi
 
-    rm "$OUTPUT_FILE"
+    rm "$OUTPUT_FILE"  # Menghapus file sementara
     echo "Video processed successfully: $FINAL_OUTPUT"
 }
 
