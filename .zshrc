@@ -54,8 +54,9 @@ yt4cut() {
     fi
 
     echo "Processing video with ffmpeg..."
+    # Menjalankan ffmpeg tanpa output PID dan log apapun
     nohup ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-           -loglevel quiet "$FINAL_OUTPUT" </dev/null &>/dev/null &  # Menyembunyikan output dan log ffmpeg, tanpa PID di terminal
+           -loglevel quiet "$FINAL_OUTPUT" </dev/null &>/dev/null &
 
     # Menunggu proses ffmpeg selesai
     wait $!  # Menunggu hingga proses ffmpeg selesai
