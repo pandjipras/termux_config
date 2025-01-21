@@ -46,7 +46,7 @@ yt4cut() {
            --download-sections "*${FORMATTED_START_TIME}-${FORMATTED_END_TIME}" \
            --merge-output-format mp4 \
            -o "$OUTPUT_FILE" \
-           "$URL"
+           "$URL" >/dev/null 2>&1
 
     if [ ! -f "$OUTPUT_FILE" ]; then
         echo "Error: Download failed or file not found."
@@ -56,7 +56,7 @@ yt4cut() {
     echo "Processing video with ffmpeg..."
     {
         ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-               -hide_banner -loglevel error \
+               -loglevel quiet \
                "$FINAL_OUTPUT" >/dev/null 2>&1
     } &
 
