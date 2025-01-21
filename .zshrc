@@ -33,7 +33,8 @@ yt4cut() {
     END_TIME=$3
 
     # Tentukan nama file output sementara untuk video dan audio
-    OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/output_temp.mp4"
+    FILE_NAME=$(yt-dlp --get-filename -o "%(title)s" "$URL")
+    OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${START_TIME//:/}-${END_TIME//:/}.mp4"
     
     # Download video dan audio
     yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
@@ -51,7 +52,7 @@ yt4cut() {
     fi
 
     # Sinkronkan audio dan video jika perlu dengan ffmpeg
-    FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/$(basename "$OUTPUT_FILE" .mp4)_final.mp4"
+    FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${START_TIME//:/}-${END_TIME//:/}_final.mp4"
     ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT"
 
     # Hapus file sementara setelah konversi
