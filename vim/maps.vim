@@ -40,6 +40,9 @@ nnoremap zq :q!<esc>
 nnoremap cu <Plug>NERDCommenterToggle
 vnoremap cu <Plug>NERDCommenterToggle
 
+" Keybinding untuk menghapus seluruh fungsi dengan "da"
+nnoremap da d0d}
+
 " Control-C Copy in visual mode
 vmap <C-C> y
 
