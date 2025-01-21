@@ -21,10 +21,50 @@ alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<title>[^-]+) - (?P<artist>[^(|]+)' -o '/storage/emulated/0/Music/%(artist,Unknown)s - %(title)s.%(ext)s'"
 #alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 alias yt4="yt-dlp -f 'bestvideo+bestaudio' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
+
+#yt4cut() {
+    #if [ $# -lt 3 ]; then
+        #echo "Usage: yt4cut URL START_TIME END_TIME"
+        #echo "Example: yt4cut https://youtu.be/example 00:30 01:00"
+        #return 1
+    #fi
+
+    #URL=$1
+    #START_TIME=$2
+    #END_TIME=$3
+
+    ## Tentukan nama file output sementara untuk video dan audio
+    #FILE_NAME=$(yt-dlp --get-filename -o "%(title)s" "$URL")
+    #OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${START_TIME//:/}-${END_TIME//:/}.mp4"
+    
+    ## Download video dan audio
+    #yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
+           #--recode-video mp4 \
+           #--audio-quality 0 \
+           #--download-sections "*${START_TIME}-${END_TIME}" \
+           #--merge-output-format mp4 \
+           #-o "$OUTPUT_FILE" \
+           #"$URL"
+
+    ## Periksa apakah file output ada
+    #if [ ! -f "$OUTPUT_FILE" ]; then
+        #echo "Error: File download gagal atau tidak ditemukan."
+        #return 1
+    #fi
+
+    ## Sinkronkan audio dan video jika perlu dengan ffmpeg
+    #FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${START_TIME//:/}-${END_TIME//:/}_final.mp4"
+    #ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT"
+
+    ## Hapus file sementara setelah konversi
+    #rm "$OUTPUT_FILE"
+
+    #echo "Video berhasil diunduh dan disinkronkan: $FINAL_OUTPUT"
+#}
 yt4cut() {
     if [ $# -lt 3 ]; then
         echo "Usage: yt4cut URL START_TIME END_TIME"
-        echo "Example: yt4cut https://youtu.be/example 00:30 01:00"
+        echo "Example: yt4cut https://youtu.be/example 0030 0100"
         return 1
     fi
 
@@ -34,13 +74,19 @@ yt4cut() {
 
     # Tentukan nama file output sementara untuk video dan audio
     FILE_NAME=$(yt-dlp --get-filename -o "%(title)s" "$URL")
-    OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${START_TIME//:/}-${END_TIME//:/}.mp4"
+    
+    # Format waktu dengan tanda ":" untuk output file
+    FORMATTED_START_TIME="${START_TIME:0:2}:${START_TIME:2:2}"
+    FORMATTED_END_TIME="${END_TIME:0:2}:${END_TIME:2:2}"
+    
+    # Nama file output menggunakan waktu normal dengan ":"
+    OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}.mp4"
     
     # Download video dan audio
     yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
            --recode-video mp4 \
            --audio-quality 0 \
-           --download-sections "*${START_TIME}-${END_TIME}" \
+           --download-sections "*${START_TIME:0:2}:${START_TIME:2:2}-${END_TIME:0:2}:${END_TIME:2:2}" \
            --merge-output-format mp4 \
            -o "$OUTPUT_FILE" \
            "$URL"
@@ -52,7 +98,7 @@ yt4cut() {
     fi
 
     # Sinkronkan audio dan video jika perlu dengan ffmpeg
-    FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${START_TIME//:/}-${END_TIME//:/}_final.mp4"
+    FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}_final.mp4"
     ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT"
 
     # Hapus file sementara setelah konversi
