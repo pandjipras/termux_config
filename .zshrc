@@ -55,7 +55,7 @@ yt4cut() {
 
     echo "Processing video with ffmpeg..."
     nohup ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-           -loglevel quiet "$FINAL_OUTPUT" &  # Menyembunyikan output ffmpeg
+           -loglevel quiet "$FINAL_OUTPUT" &>/dev/null &  # Menyembunyikan output dan log ffmpeg
 
     # Menunggu proses ffmpeg selesai
     wait $!  # Menunggu hingga proses ffmpeg selesai
