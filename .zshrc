@@ -95,21 +95,19 @@ songcut() {
 }
 
 vidcut() {
-    if [[ $# -ne 2 ]]; then
-        echo "Usage: vidcut <start_time> <end_time>"
-        echo "Example: vidcut 0030 0060"
+    if [[ $# -ne 3 ]]; then
+        echo "Usage: vidcut <filename> <start_time> <end_time>"
+        echo "Example: vidcut video.mp4 0030 0060"
         return 1
     fi
 
-    # Mengubah format waktu dari 0030 menjadi 00:30
-    start_time="${1:0:2}:${1:2:2}"
-    end_time="${2:0:2}:${2:2:2}"
-
-    input_file="input.mp4"
-    output_file="output_${1}_${2}.mp4"
+    input_file="$1"
+    start_time="${2:0:2}:${2:2:2}" # Mengubah format waktu dari 0030 menjadi 00:30
+    end_time="${3:0:2}:${3:2:2}"   # Mengubah format waktu dari 0060 menjadi 00:60
+    output_file="output_${2}_${3}.mp4"
 
     if [[ ! -f $input_file ]]; then
-        echo "File $input_file tidak ditemukan di direktori ini!"
+        echo "File $input_file tidak ditemukan!"
         return 1
     fi
 
