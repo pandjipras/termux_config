@@ -94,6 +94,29 @@ songcut() {
     done
 }
 
+vidcut() {
+    if [[ $# -ne 2 ]]; then
+        echo "Usage: vidcut <start_time> <end_time>"
+        echo "Example: vidcut 0030 0060"
+        return 1
+    fi
+
+    # Mengubah format waktu dari 0030 menjadi 00:30
+    start_time="${1:0:2}:${1:2:2}"
+    end_time="${2:0:2}:${2:2:2}"
+
+    input_file="input.mp4"
+    output_file="output_${1}_${2}.mp4"
+
+    if [[ ! -f $input_file ]]; then
+        echo "File $input_file tidak ditemukan di direktori ini!"
+        return 1
+    fi
+
+    ffmpeg -i "$input_file" -ss "$start_time" -to "$end_time" -c copy "$output_file"
+    echo "Video berhasil dipotong: $output_file"
+}
+
 volup() {
     if [ -z "$1" ]; then
         echo "Usage: volup <input_file> [<output_file>] [<volume_level>]"
