@@ -45,10 +45,11 @@ yt4cut() {
     
     # Fungsi untuk animasi loading
     loading_animation() {
-        animation="|/-\\"
-        i=0
+        local animation=("|" "/" "-" "\\")
+        local i=0
         while kill -0 $1 2>/dev/null; do
-            echo -ne "\r${animation:i++%${#animation}:1} Downloading..."
+            echo -ne "\r${animation[i]} Downloading..."
+            i=$(( (i + 1) % 4 ))
             sleep 0.1
         done
         echo -ne "\rDownload selesai!                  \n"
