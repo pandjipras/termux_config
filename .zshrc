@@ -32,13 +32,19 @@ yt4cut() {
     START_TIME=$2
     END_TIME=$3
 
+    OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/%(title)s_%(section_start)s-%(section_end)s.mp4"
+
+    # Download video and audio
     yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
            --recode-video mp4 \
            --audio-quality 0 \
            --download-sections "*${START_TIME}-${END_TIME}" \
            --merge-output-format mp4 \
-           -o "/storage/emulated/0/Download/Ytdlp/%(title)s_%(section_start)s-%(section_end)s.%(ext)s" \
+           -o "$OUTPUT_FILE" \
            "$URL"
+
+    # Sync audio and video if necessary
+    ffmpeg -i "$OUTPUT_FILE" -c:v copy -c:a aac -strict experimental -y "$OUTPUT_FILE"
 }
 git-upload() {
     cd ~/termux_config || return
