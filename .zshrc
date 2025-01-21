@@ -78,8 +78,8 @@ yt4cut() {
     # Sinkronkan audio dan video dengan ffmpeg
     FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}_final.mp4"
     
-    # Jalankan ffmpeg dengan silent output dalam subshell menggunakan setsid
-    (setsid ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error >/dev/null 2>&1) &
+    # Jalankan ffmpeg dengan silent output tanpa memutuskan dari terminal
+    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error >/dev/null 2>&1 &
 
     # Dapatkan PID proses ffmpeg dan jalankan animasi
     FFMPEG_PID=$!
