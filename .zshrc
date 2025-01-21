@@ -75,16 +75,17 @@ yt4cut() {
         return 1
     fi
 
-    # Sinkronkan audio dan video dengan ffmpeg
+    # Sinkronkan audio dan video dengan ffmpeg di foreground
     FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}_final.mp4"
     
-    # Jalankan ffmpeg dengan silent output tanpa memutuskan dari terminal
-    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error >/dev/null 2>&1 &
+    echo -ne "Processing video with ffmpeg...\n"
+    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error >/dev/null 2>&1
 
-    # Dapatkan PID proses ffmpeg dan jalankan animasi
-    FFMPEG_PID=$!
-    loading_animation $FFMPEG_PID
-    wait $FFMPEG_PID
+    # Periksa apakah file hasil ada
+    if [ ! -f "$FINAL_OUTPUT" ]; then
+        echo "Error: Proses ffmpeg gagal."
+        return 1
+    fi
 
     # Hapus file sementara setelah konversi
     rm "$OUTPUT_FILE"
