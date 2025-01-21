@@ -58,6 +58,7 @@ yt4cut() {
            -loglevel quiet "$FINAL_OUTPUT" >/dev/null 2>&1 &  # Menyembunyikan output ffmpeg
 
     FF_PID=$!
+    disown $FF_PID  # Mengeluarkan proses dari terminal untuk menghindari pid output
 
     # Menampilkan animasi loading saat FFmpeg berjalan
     animation="/-\|"
