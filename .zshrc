@@ -58,7 +58,7 @@ yt4cut() {
     nohup ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
            -loglevel quiet "$FINAL_OUTPUT" </dev/null &>/dev/null &
 
-    # Menunggu proses ffmpeg selesai
+    # Menunggu proses ffmpeg selesai tanpa menampilkan PID
     wait $!  # Menunggu hingga proses ffmpeg selesai
 
     # Menampilkan animasi loading saat FFmpeg berjalan
