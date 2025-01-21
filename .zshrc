@@ -48,11 +48,11 @@ yt4cut() {
         local animation=("|" "/" "-" "\\")
         local i=0
         while kill -0 $1 2>/dev/null; do
-            echo -ne "\r${animation[i]} Downloading..."
+            echo -ne "\r${animation[i]} Processing..."
             i=$(( (i + 1) % 4 ))
             sleep 0.1
         done
-        echo -ne "\rDownload selesai!                  \n"
+        echo -ne "\rProcess selesai!                   \n"
     }
 
     # Jalankan yt-dlp dengan animasi loading
@@ -75,9 +75,16 @@ yt4cut() {
         return 1
     fi
 
-    # Sinkronkan audio dan video jika perlu dengan ffmpeg
+    # Sinkronkan audio dan video dengan ffmpeg
     FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}_final.mp4"
-    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT"
+    
+    # Jalankan ffmpeg dengan silent output dan animasi loading
+    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error &
+
+    # Dapatkan PID proses ffmpeg dan jalankan animasi
+    FFMPEG_PID=$!
+    loading_animation $FFMPEG_PID
+    wait $FFMPEG_PID
 
     # Hapus file sementara setelah konversi
     rm "$OUTPUT_FILE"
@@ -85,6 +92,7 @@ yt4cut() {
     # Menampilkan hasil akhir setelah proses selesai
     echo -e "Video berhasil diunduh dan disinkronkan: $FINAL_OUTPUT"
 }
+
 #yt4cut() {
     #if [ $# -lt 3 ]; then
         #echo "Usage: yt4cut URL START_TIME END_TIME"
