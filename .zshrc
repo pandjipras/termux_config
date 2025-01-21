@@ -36,6 +36,7 @@ yt4cut() {
            --recode-video mp4 \
            --audio-quality 0 \
            --download-sections "*${START_TIME}-${END_TIME}" \
+           --merge-output-format mp4 \
            -o "/storage/emulated/0/Download/Ytdlp/%(title)s_%(section_start)s-%(section_end)s.%(ext)s" \
            "$URL"
 }
