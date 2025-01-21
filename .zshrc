@@ -33,65 +33,38 @@ yt4cut() {
     START_TIME=$2
     END_TIME=$3
 
-    # Tentukan nama file output sementara untuk video dan audio
     FILE_NAME=$(yt-dlp --get-filename -o "%(title)s" "$URL")
-    
-    # Format waktu dengan tanda ":" untuk output file
     FORMATTED_START_TIME="${START_TIME:0:2}:${START_TIME:2:2}"
     FORMATTED_END_TIME="${END_TIME:0:2}:${END_TIME:2:2}"
-    
-    # Nama file output menggunakan waktu normal dengan ":"
     OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}.mp4"
-    
-    # Fungsi untuk animasi loading
-    loading_animation() {
-        local animation=("|" "/" "-" "\\")
-        local i=0
-        while kill -0 $1 2>/dev/null; do
-            echo -ne "\r${animation[i]} Processing..."
-            i=$(( (i + 1) % 4 ))
-            sleep 0.1
-        done
-        echo -ne "\rProcess selesai!                   \n"
-    }
+    FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}_final.mp4"
 
-    # Jalankan yt-dlp dengan animasi loading
+    echo "Downloading video..."
     yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
            --recode-video mp4 \
            --audio-quality 0 \
            --download-sections "*${START_TIME:0:2}:${START_TIME:2:2}-${END_TIME:0:2}:${END_TIME:2:2}" \
            --merge-output-format mp4 \
            -o "$OUTPUT_FILE" \
-           "$URL" &
+           "$URL"
 
-    # Dapatkan PID proses yt-dlp dan jalankan animasi
-    YT_PID=$!
-    loading_animation $YT_PID
-    wait $YT_PID
-
-    # Periksa apakah file output ada
     if [ ! -f "$OUTPUT_FILE" ]; then
-        echo "Error: File download gagal atau tidak ditemukan."
+        echo "Error: Download failed or file not found."
         return 1
     fi
 
-    # Sinkronkan audio dan video dengan ffmpeg di foreground
-    FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}_final.mp4"
-    
-    echo -ne "Processing video with ffmpeg...\n"
-    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error >/dev/null 2>&1
+    echo "Processing video with ffmpeg..."
+    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
+           -hide_banner -loglevel error \
+           "$FINAL_OUTPUT" >/dev/null 2>&1
 
-    # Periksa apakah file hasil ada
     if [ ! -f "$FINAL_OUTPUT" ]; then
-        echo "Error: Proses ffmpeg gagal."
+        echo "Error: FFmpeg process failed."
         return 1
     fi
 
-    # Hapus file sementara setelah konversi
     rm "$OUTPUT_FILE"
-
-    # Menampilkan hasil akhir setelah proses selesai
-    echo -e "Video berhasil diunduh dan disinkronkan: $FINAL_OUTPUT"
+    echo "Video processed successfully: $FINAL_OUTPUT"
 }
 
 #yt4cut() {
