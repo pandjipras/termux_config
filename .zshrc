@@ -43,7 +43,7 @@ yt4cut() {
     yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
            --recode-video mp4 \
            --audio-quality 0 \
-           --download-sections "*${START_TIME:0:2}:${START_TIME:2:2}-${END_TIME:0:2}:${END_TIME:2:2}" \
+           --download-sections "*${FORMATTED_START_TIME}-${FORMATTED_END_TIME}" \
            --merge-output-format mp4 \
            -o "$OUTPUT_FILE" \
            "$URL"
@@ -54,9 +54,21 @@ yt4cut() {
     fi
 
     echo "Processing video with ffmpeg..."
-    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
-           -hide_banner -loglevel error \
-           "$FINAL_OUTPUT" >/dev/null 2>&1
+    {
+        ffmpeg -nostdin -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y \
+               -hide_banner -loglevel error \
+               "$FINAL_OUTPUT" >/dev/null 2>&1
+    } &
+
+    # Display a loading animation while FFmpeg runs
+    animation="/-\|"
+    while ps | grep -q "[f]fmpeg"; do
+        for i in {0..3}; do
+            printf "\rProcessing... %s" "${animation:$i:1}"
+            sleep 0.2
+        done
+    done
+    printf "\rProcessing... Done!\n"
 
     if [ ! -f "$FINAL_OUTPUT" ]; then
         echo "Error: FFmpeg process failed."
