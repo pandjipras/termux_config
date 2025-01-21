@@ -79,7 +79,7 @@ yt4cut() {
     FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/${FILE_NAME}_${FORMATTED_START_TIME}_${FORMATTED_END_TIME}_final.mp4"
     
     # Jalankan ffmpeg dengan silent output dan animasi loading
-    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error &
+    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT" -hide_banner -loglevel error >/dev/null 2>&1 &
 
     # Dapatkan PID proses ffmpeg dan jalankan animasi
     FFMPEG_PID=$!
