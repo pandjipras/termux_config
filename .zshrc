@@ -20,7 +20,24 @@ alias ytdlp_upd="pip install --upgrade yt-dlp"
 alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<title>[^-]+) - (?P<artist>[^(|]+)' -o '/storage/emulated/0/Music/%(artist,Unknown)s - %(title)s.%(ext)s'"
 #alias yt4="yt-dlp -f mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
-alias yt4="yt-dlp -f 'bestvideo+bestaudio' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
+alias yt4cut="yt-dlp -f 'bestvideo+bestaudio' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
+yt4() {
+    local url=$1
+    local start_time=$2
+    local end_time=$3
+    local output_dir="/storage/emulated/0/Download/Ytdlp"
+
+    # Konversi waktu dari format detik ke HH:MM:SS
+    local start_formatted=$(printf '%02d:%02d:%02d' $((start_time / 3600)) $((start_time % 3600 / 60)) $((start_time % 60)))
+    local end_formatted=$(printf '%02d:%02d:%02d' $((end_time / 3600)) $((end_time % 3600 / 60)) $((end_time % 60)))
+
+    # Jalankan yt-dlp dengan filter waktu
+    yt-dlp -f "bestvideo+bestaudio" \
+           --merge-output-format mp4 \
+           --download-sections "*${start_formatted}-${end_formatted}" \
+           -o "${output_dir}/%(title)s.%(ext)s" \
+           "$url"
+}
 
 git-upload() {
     cd ~/termux_config || return
