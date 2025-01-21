@@ -32,7 +32,7 @@ yt4cut() {
     START_TIME=$2
     END_TIME=$3
 
-    yt-dlp -f "bv*+ba/b" \
+    yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
            --recode-video mp4 \
            --audio-quality 0 \
            --download-sections "*${START_TIME}-${END_TIME}" \
