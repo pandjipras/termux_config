@@ -32,9 +32,10 @@ yt4cut() {
     START_TIME=$2
     END_TIME=$3
 
-    OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/%(title)s_%(section_start)s-%(section_end)s.mp4"
-
-    # Download video and audio
+    # Tentukan nama file output sementara untuk video dan audio
+    OUTPUT_FILE="/storage/emulated/0/Download/Ytdlp/output_temp.mp4"
+    
+    # Download video dan audio
     yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" \
            --recode-video mp4 \
            --audio-quality 0 \
@@ -43,8 +44,20 @@ yt4cut() {
            -o "$OUTPUT_FILE" \
            "$URL"
 
-    # Sync audio and video if necessary
-    ffmpeg -i "$OUTPUT_FILE" -c:v copy -c:a aac -strict experimental -y "$OUTPUT_FILE"
+    # Periksa apakah file output ada
+    if [ ! -f "$OUTPUT_FILE" ]; then
+        echo "Error: File download gagal atau tidak ditemukan."
+        return 1
+    fi
+
+    # Sinkronkan audio dan video jika perlu dengan ffmpeg
+    FINAL_OUTPUT="/storage/emulated/0/Download/Ytdlp/$(basename "$OUTPUT_FILE" .mp4)_final.mp4"
+    ffmpeg -i "$OUTPUT_FILE" -c:v libx264 -c:a aac -strict experimental -y "$FINAL_OUTPUT"
+
+    # Hapus file sementara setelah konversi
+    rm "$OUTPUT_FILE"
+
+    echo "Video berhasil diunduh dan disinkronkan: $FINAL_OUTPUT"
 }
 git-upload() {
     cd ~/termux_config || return
