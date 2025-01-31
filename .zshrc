@@ -204,8 +204,12 @@ resistor_calc() {
         Resistor_Watt="Gunakan 1 Watt atau lebih"
     elif (( $(echo "$P <= 1" | bc -l) )); then
         Resistor_Watt="Gunakan 2 Watt atau lebih"
+    elif (( $(echo "$P <= 3" | bc -l) )); then
+        Resistor_Watt="Gunakan 5 Watt (resistor kapur) atau lebih"
+    elif (( $(echo "$P <= 10" | bc -l) )); then
+        Resistor_Watt="Gunakan 10 Watt (resistor aluminium) atau lebih"
     else
-        Resistor_Watt="Gunakan resistor dengan daya lebih besar dari 2 Watt"
+        Resistor_Watt="Gunakan resistor di atas 10 Watt dan pertimbangkan pendingin"
     fi
 
     echo "Rekomendasi watt resistor: $Resistor_Watt"
