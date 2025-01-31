@@ -172,6 +172,26 @@ volup() {
     ffmpeg -i "$input_file" -filter:a "volume=$volume_level" "$output_file"
 }
 
+resistor_calc() {
+    if [[ $# -ne 3 ]]; then
+        echo "Penggunaan: resistor_calc <Vin> <Vout> <Arus dalam Ampere>"
+        echo "Contoh: resistor_calc 12 5 0.5"
+        return 1
+    fi
+
+    local Vin=$1
+    local Vout=$2
+    local I=$3
+
+    if (( $(echo "$I == 0" | bc -l) )); then
+        echo "Error: Arus tidak boleh 0"
+        return 1
+    fi
+
+    local R=$(echo "scale=2; ($Vin - $Vout) / $I" | bc -l)
+    echo "Resistor yang dibutuhkan: ${R} Ohm"
+}
+
 perbandingan_harga() {
     # Fungsi untuk menghitung harga per 1 gram/ml
     calculate_price_per_unit() {
@@ -216,6 +236,7 @@ perbandingan_harga() {
         echo "Kedua produk memiliki harga yang sama per gram/ml."
     fi
 }
+
 
 tabungan() {
   while true; do
