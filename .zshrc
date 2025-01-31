@@ -188,8 +188,27 @@ resistor_calc() {
         return 1
     fi
 
-    local R=$(echo "scale=2; ($Vin - $Vout) / $I" | bc -l)
+    local Vdrop=$(echo "$Vin - $Vout" | bc -l)
+    local R=$(echo "scale=2; $Vdrop / $I" | bc -l)
+    local P=$(echo "scale=2; $Vdrop * $I" | bc -l)
+
     echo "Resistor yang dibutuhkan: ${R} Ohm"
+    echo "Daya yang harus ditahan resistor: ${P} Watt"
+
+    # Menentukan watt resistor minimal (2x dari daya yang dihitung)
+    if (( $(echo "$P <= 0.125" | bc -l) )); then
+        Resistor_Watt="Gunakan ¼ Watt atau lebih"
+    elif (( $(echo "$P <= 0.25" | bc -l) )); then
+        Resistor_Watt="Gunakan ½ Watt atau lebih"
+    elif (( $(echo "$P <= 0.5" | bc -l) )); then
+        Resistor_Watt="Gunakan 1 Watt atau lebih"
+    elif (( $(echo "$P <= 1" | bc -l) )); then
+        Resistor_Watt="Gunakan 2 Watt atau lebih"
+    else
+        Resistor_Watt="Gunakan resistor dengan daya lebih besar dari 2 Watt"
+    fi
+
+    echo "Rekomendasi watt resistor: $Resistor_Watt"
 }
 
 perbandingan_harga() {
