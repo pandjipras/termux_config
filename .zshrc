@@ -4,6 +4,7 @@ export VISUAL="/data/data/com.termux/files/usr/bin/nvim"
 export PATH=$HOME/bin:$PATH
 ZSH_THEME="robbyrussell"
 plugins=(git zsh-autosuggestions)
+bindkey '^ ' autosuggest-accept
 
 source $ZSH/oh-my-zsh.sh
 
