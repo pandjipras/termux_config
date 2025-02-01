@@ -260,19 +260,33 @@ perbandingan_harga() {
     fi
 }
 
-
 tabungan() {
   while true; do
-    # Meminta input per hari menabung dan nominal tabungan
-    echo -n "Tabungan per hari (ketik tanpa ribuan): "
-    read per_hari
+    # Meminta input per hari menabung
+    while true; do
+      echo -n "Tabungan per hari (ketik tanpa ribuan): "
+      read per_hari
+      if [[ "$per_hari" =~ ^[0-9]+$ ]]; then
+        break
+      else
+        echo "Input harus berupa angka. Silakan coba lagi."
+      fi
+    done
 
-    echo -n "Nominal yang akan ditabung (ketik tanpa ribuan): "
-    read nominal
+    # Meminta input nominal tabungan
+    while true; do
+      echo -n "Nominal yang akan ditabung (ketik tanpa ribuan atau gunakan jt/rb): "
+      read nominal
+      if [[ "$nominal" =~ ^[0-9jtb]+$ ]]; then
+        break
+      else
+        echo "Input tidak valid. Gunakan format angka atau singkatan (jt/rb)."
+      fi
+    done
 
-    # Mengkonversi input singkatan menjadi angka
+    # Konversi singkatan ke angka
     nominal=$(echo $nominal | sed 's/jt/*1000000/g' | sed 's/rb/*1000/g' | bc)
-    
+
     # Menghitung jumlah hari yang diperlukan
     total_hari=$(echo "$nominal / $per_hari" | bc)
 
@@ -293,14 +307,21 @@ tabungan() {
     if (( hari > 0 )); then
       hasil="${hasil}${hari} hari"
     fi
-
     echo "Hasil: ${hasil}"
     echo
-    # Mengulang proses
-    echo "Tekan Ctrl+C untuk keluar atau tekan Enter untuk melanjutkan."
-    read
+
+    # Mengulang proses atau keluar
+    echo "Tekan 'q' untuk keluar atau tekan Enter untuk melanjutkan."
+    read input
+    if [[ "$input" == "q" ]]; then
+      break
+    fi
+
+    # Bersihkan variabel
+    unset per_hari nominal total_hari tahun bulan hari hasil
   done
 }
+
 
 perkiraan_pemakaian_battery() {
     # Input watt
