@@ -233,10 +233,14 @@ search() {
     # Lakukan pencarian
     if [[ $case_sensitive == "y" ]]; then
         echo "Mencari dengan case sensitif..."
-        results=($(grep -rnw '.' -e "$search_text"))
+        while IFS= read -r line; do
+            results+=("$line")
+        done < <(grep -rnw '.' -e "$search_text")
     else
         echo "Mencari tanpa case sensitif..."
-        results=($(grep -rnwi '.' -e "$search_text"))
+        while IFS= read -r line; do
+            results+=("$line")
+        done < <(grep -rnwi '.' -e "$search_text")
     fi
 
     # Tampilkan hasil dengan nomor
