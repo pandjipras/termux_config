@@ -193,8 +193,8 @@ resistor_calc() {
     local R=$(echo "scale=2; $Vdrop / $I" | bc -l)
     local P=$(echo "scale=2; $Vdrop * $I" | bc -l)
 
-    echo "Resistor yang dibutuhkan: ${R} Ohm"
-    echo "Daya yang harus ditahan resistor: ${P} Watt"
+    printf "Resistor yang dibutuhkan: %.2f Ohm\n" "$R"
+    printf "Daya yang harus ditahan resistor: %.2f Watt\n" "$P"
 
     # Menentukan watt resistor minimal (2x dari daya yang dihitung)
     if (( $(echo "$P <= 0.125" | bc -l) )); then
