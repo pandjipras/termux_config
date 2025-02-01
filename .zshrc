@@ -215,6 +215,62 @@ resistor_calc() {
     echo "Rekomendasi watt resistor: $Resistor_Watt"
 }
 
+search() {
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: search <text>"
+        return 1
+    fi
+
+    local search_text=$1
+    local case_sensitive
+    local results=()
+    local choice
+
+    # Tanya apakah pencarian case sensitif
+    read -q "case_sensitive?Apakah kata yang ingin dicari case sensitif? (y/n) "
+    echo
+
+    # Lakukan pencarian
+    if [[ $case_sensitive == "y" ]]; then
+        echo "Mencari dengan case sensitif..."
+        results=($(grep -rnw '.' -e "$search_text"))
+    else
+        echo "Mencari tanpa case sensitif..."
+        results=($(grep -rnwi '.' -e "$search_text"))
+    fi
+
+    # Tampilkan hasil dengan nomor
+    if [[ ${#results[@]} -eq 0 ]]; then
+        echo "Tidak ada hasil ditemukan."
+        return
+    fi
+
+    echo "Hasil pencarian:"
+    for i in {1..${#results[@]}}; do
+        echo "$i: ${results[$i]}"
+    done
+
+    # Minta pengguna memilih nomor
+    echo -n "Pilih nomor untuk membuka file di Neovim (atau ketik 'q' untuk keluar): "
+    read choice
+
+    if [[ $choice == "q" ]]; then
+        echo "Keluar."
+        return
+    fi
+
+    if [[ $choice =~ ^[0-9]+$ ]] && [[ $choice -ge 1 ]] && [[ $choice -le ${#results[@]} ]]; then
+        local selected_result=${results[$choice]}
+        local file_path=$(echo $selected_result | cut -d':' -f1)
+        local line_number=$(echo $selected_result | cut -d':' -f2)
+
+        # Buka file di Neovim pada baris yang sesuai
+        nvim +$line_number $file_path
+    else
+        echo "Pilihan tidak valid."
+    fi
+}
+
 perbandingan_harga() {
     # Fungsi untuk menghitung harga per 1 gram/ml
     calculate_price_per_unit() {
