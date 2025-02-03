@@ -95,7 +95,6 @@ flac_accuracy() {
 
     for file in "${files[@]}"; do
         if [[ ! -f "$file" ]]; then
-            echo "File not found: $file"
             continue
         fi
 
@@ -105,26 +104,21 @@ flac_accuracy() {
         fi
 
         if ! soxi -t "$file" | grep -qi "flac"; then
-            echo "Not a valid FLAC file: $file"
             continue
         fi
 
         # Ambil data spektrum
-        local spectrum_output
-        spectrum_output=$(sox "$file" -n stat 2>&1)
-
-        # Ambil nilai "Rough frequency"
         local max_frequency
-        max_frequency=$(echo "$spectrum_output" | awk '/Rough frequency:/ {print $3}')
+        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
 
         # Jika "Rough frequency" kosong, coba gunakan "Maximum delta"
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            max_frequency=$(echo "$spectrum_output" | awk '/Maximum delta:/ {print $3}')
+            max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Maximum delta:/ {print $3}')
         fi
 
         # Jika tetap kosong, tidak bisa menentukan
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "Cannot determine accuracy: $file"
+            echo "$file: UNKNOWN"
             continue
         fi
 
