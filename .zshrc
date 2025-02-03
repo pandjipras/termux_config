@@ -113,13 +113,11 @@ flac_accuracy() {
         local spectrum_output
         spectrum_output=$(sox "$file" -n stat 2>&1 | tr -d '\r')
 
-        # Tampilkan output spektrum dalam format yang lebih rapi
-        printf "Spectrum analysis for: %s\n%s\n" "$file" "$spectrum_output"
-
+        # Ambil nilai terakhir (biasanya volume adjustment atau max frequency)
         local max_frequency
-        max_frequency=$(echo "$spectrum_output" | grep -oE '[0-9]+(\.[0-9]+)?' | tail -n1)
+        max_frequency=$(echo "$spectrum_output" | awk '/Volume adjustment:/ {print $3}')
 
-        if [[ -z "$max_frequency" ]]; then
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
             printf "Unable to determine the maximum frequency for '%s'.\n" "$file"
             continue
         fi
