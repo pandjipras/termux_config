@@ -109,10 +109,20 @@ flac_accuracy() {
             continue
         fi
 
-        # Ambil nilai frekuensi maksimum dari "Rough frequency:"
-        local max_frequency
-        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
+        # Ambil data spektrum
+        local spectrum_output
+        spectrum_output=$(sox "$file" -n stat 2>&1)
 
+        # Ambil nilai "Rough frequency"
+        local max_frequency
+        max_frequency=$(echo "$spectrum_output" | awk '/Rough frequency:/ {print $3}')
+
+        # Jika "Rough frequency" kosong, coba gunakan "Maximum delta"
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            max_frequency=$(echo "$spectrum_output" | awk '/Maximum delta:/ {print $3}')
+        fi
+
+        # Jika tetap kosong, tidak bisa menentukan
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
             echo "Cannot determine accuracy: $file"
             continue
