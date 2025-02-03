@@ -77,9 +77,9 @@ yt4cut() {
     echo "Video processed successfully: $FINAL_OUTPUT"
 }
 
-detect_flac_accuracy() {
+flac_accuracy() {
     if [[ $# -eq 0 ]]; then
-        echo "Usage: detect_flac_accuracy <file.flac>"
+        echo "Usage: flac_accuracy <file.flac>"
         return 1
     fi
 
@@ -90,30 +90,30 @@ detect_flac_accuracy() {
         return 1
     fi
 
-    # Check if the file is a FLAC file
-    if ! file "$file" | grep -q "FLAC audio"; then
-        echo "The file is not a FLAC audio file."
+    # Periksa apakah file benar-benar FLAC
+    if ! soxi -t "$file" | grep -qi "flac"; then
+        echo "The file is not a valid FLAC audio file."
         return 1
     fi
 
-    # Check if sox is installed
+    # Periksa apakah sox terinstal
     if ! command -v sox &> /dev/null; then
         echo "Please install 'sox' to use this function."
         return 1
     fi
 
-    # Analyze the frequency spectrum using sox
+    # Analisis spektrum frekuensi menggunakan sox
     local spectrum_output=$(sox "$file" -n stat 2>&1)
-    local max_frequency=$(echo "$spectrum_output" | grep "Maximum frequency" | awk '{print $3}')
+    local max_frequency=$(echo "$spectrum_output" | grep -oE '[0-9]+(\.[0-9]+)?' | tail -n1)
 
-    # Check if max_frequency is a valid number
-    if ! [[ "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    # Pastikan max_frequency adalah angka yang valid
+    if [[ -z "$max_frequency" ]]; then
         echo "Unable to determine the maximum frequency. The file may be corrupted or not a valid FLAC."
         return 1
     fi
 
-    # Check if the maximum frequency is below a certain threshold (e.g., 16 kHz)
-    if (( $(echo "$max_frequency < 16000" | bc -l 2>/dev/null) )); then
+    # Bandingkan dengan batas 16 kHz menggunakan awk
+    if awk "BEGIN {exit !($max_frequency < 16000)}"; then
         echo "The FLAC file is likely compressed (e.g., from MP3). Maximum frequency: ${max_frequency} Hz."
     else
         echo "The FLAC file is likely original. Maximum frequency: ${max_frequency} Hz."
