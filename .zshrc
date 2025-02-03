@@ -106,8 +106,14 @@ detect_flac_accuracy() {
     local spectrum_output=$(sox "$file" -n stat 2>&1)
     local max_frequency=$(echo "$spectrum_output" | grep "Maximum frequency" | awk '{print $3}')
 
+    # Check if max_frequency is a valid number
+    if ! [[ "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        echo "Unable to determine the maximum frequency. The file may be corrupted or not a valid FLAC."
+        return 1
+    fi
+
     # Check if the maximum frequency is below a certain threshold (e.g., 16 kHz)
-    if (( $(echo "$max_frequency < 16000" | bc -l) )); then
+    if (( $(echo "$max_frequency < 16000" | bc -l 2>/dev/null) )); then
         echo "The FLAC file is likely compressed (e.g., from MP3). Maximum frequency: ${max_frequency} Hz."
     else
         echo "The FLAC file is likely original. Maximum frequency: ${max_frequency} Hz."
