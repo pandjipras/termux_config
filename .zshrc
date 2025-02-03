@@ -122,14 +122,11 @@ flac_accuracy() {
             continue
         fi
 
-        # Konversi ke kHz jika nilai ditemukan
-        max_frequency_khz=$(echo "scale=3; $max_frequency / 1000" | bc)
-
-        # Output sederhana dengan kHz
+        # Output sederhana
         if awk "BEGIN {exit !($max_frequency < 16000)}"; then
-            echo "$file: COMPRESSED (Max Frequency: ${max_frequency_khz} kHz)"
+            echo "$file: COMPRESSED"
         else
-            echo "$file: ORIGINAL (Max Frequency: ${max_frequency_khz} kHz)"
+            echo "$file: ORIGINAL"
         fi
     done
 }
