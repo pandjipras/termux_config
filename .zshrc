@@ -81,8 +81,11 @@ flac_accuracy() {
     local files=()
 
     if [[ $# -eq 0 ]]; then
-        # Cari semua file FLAC di folder saat ini
-        mapfile -t files < <(find . -maxdepth 1 -type f -iname "*.flac")
+        # Cari semua file FLAC di folder saat ini tanpa menggunakan mapfile
+        while IFS= read -r file; do
+            files+=("$file")
+        done < <(find . -maxdepth 1 -type f -iname "*.flac")
+
         if [[ ${#files[@]} -eq 0 ]]; then
             echo "No FLAC files found in the current directory."
             return 1
