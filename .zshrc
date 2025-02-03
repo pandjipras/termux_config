@@ -81,7 +81,6 @@ flac_accuracy() {
     local files=()
 
     if [[ $# -eq 0 ]]; then
-        # Cari semua file FLAC di folder saat ini tanpa menggunakan mapfile
         while IFS= read -r file; do
             files+=("$file")
         done < <(find . -maxdepth 1 -type f -iname "*.flac")
@@ -94,42 +93,42 @@ flac_accuracy() {
         files=("$@")
     fi
 
-    # Periksa setiap file FLAC
     for file in "${files[@]}"; do
         if [[ ! -f "$file" ]]; then
-            echo "File not found: $file"
+            printf "File not found: %s\n" "$file"
             continue
         fi
 
-        # Periksa apakah sox terinstal
         if ! command -v sox &> /dev/null; then
-            echo "Please install 'sox' to use this function."
+            printf "Please install 'sox' to use this function.\n"
             return 1
         fi
 
-        # Periksa apakah file benar-benar FLAC
         if ! soxi -t "$file" | grep -qi "flac"; then
-            echo "The file '$file' is not a valid FLAC audio file."
+            printf "The file '%s' is not a valid FLAC audio file.\n" "$file"
             continue
         fi
 
         # Analisis spektrum frekuensi menggunakan sox
         local spectrum_output
-        spectrum_output=$(sox "$file" -n stat 2>&1)
+        spectrum_output=$(sox "$file" -n stat 2>&1 | tr -d '\r')
+
+        # Tampilkan output spektrum dalam format yang lebih rapi
+        printf "Spectrum analysis for: %s\n%s\n" "$file" "$spectrum_output"
+
         local max_frequency
         max_frequency=$(echo "$spectrum_output" | grep -oE '[0-9]+(\.[0-9]+)?' | tail -n1)
 
-        # Pastikan max_frequency adalah angka yang valid
         if [[ -z "$max_frequency" ]]; then
-            echo "Unable to determine the maximum frequency for '$file'."
+            printf "Unable to determine the maximum frequency for '%s'.\n" "$file"
             continue
         fi
 
         # Bandingkan dengan batas 16 kHz menggunakan awk
         if awk "BEGIN {exit !($max_frequency < 16000)}"; then
-            echo "'$file' is likely compressed (e.g., from MP3). Maximum frequency: ${max_frequency} Hz."
+            printf "'%s' is likely compressed (e.g., from MP3). Maximum frequency: %s Hz.\n" "$file" "$max_frequency"
         else
-            echo "'$file' is likely original. Maximum frequency: ${max_frequency} Hz."
+            printf "'%s' is likely original. Maximum frequency: %s Hz.\n" "$file" "$max_frequency"
         fi
     done
 }
