@@ -77,6 +77,42 @@ yt4cut() {
     echo "Video processed successfully: $FINAL_OUTPUT"
 }
 
+detect_flac_accuracy() {
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: detect_flac_accuracy <file.flac>"
+        return 1
+    fi
+
+    local file="$1"
+
+    if [[ ! -f "$file" ]]; then
+        echo "File not found: $file"
+        return 1
+    fi
+
+    # Check if the file is a FLAC file
+    if ! file "$file" | grep -q "FLAC audio"; then
+        echo "The file is not a FLAC audio file."
+        return 1
+    fi
+
+    # Check if sox is installed
+    if ! command -v sox &> /dev/null; then
+        echo "Please install 'sox' to use this function."
+        return 1
+    fi
+
+    # Analyze the frequency spectrum using sox
+    local spectrum_output=$(sox "$file" -n stat 2>&1)
+    local max_frequency=$(echo "$spectrum_output" | grep "Maximum frequency" | awk '{print $3}')
+
+    # Check if the maximum frequency is below a certain threshold (e.g., 16 kHz)
+    if (( $(echo "$max_frequency < 16000" | bc -l) )); then
+        echo "The FLAC file is likely compressed (e.g., from MP3). Maximum frequency: ${max_frequency} Hz."
+    else
+        echo "The FLAC file is likely original. Maximum frequency: ${max_frequency} Hz."
+    fi
+}
 
 git-upload() {
     cd ~/termux_config || return
