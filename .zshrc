@@ -95,38 +95,34 @@ flac_accuracy() {
 
     for file in "${files[@]}"; do
         if [[ ! -f "$file" ]]; then
-            printf "File not found: %s\n" "$file"
+            echo "File not found: $file"
             continue
         fi
 
         if ! command -v sox &> /dev/null; then
-            printf "Please install 'sox' to use this function.\n"
+            echo "Please install 'sox' to use this function."
             return 1
         fi
 
         if ! soxi -t "$file" | grep -qi "flac"; then
-            printf "The file '%s' is not a valid FLAC audio file.\n" "$file"
+            echo "Not a valid FLAC file: $file"
             continue
         fi
 
-        # Analisis spektrum frekuensi menggunakan sox
-        local spectrum_output
-        spectrum_output=$(sox "$file" -n stat 2>&1)
-
-        # Ambil nilai setelah "Rough frequency:"
+        # Ambil nilai frekuensi maksimum dari "Rough frequency:"
         local max_frequency
-        max_frequency=$(echo "$spectrum_output" | awk '/Rough frequency:/ {print $3}')
+        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
 
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            printf "Unable to determine the maximum frequency for '%s'.\n" "$file"
+            echo "Cannot determine accuracy: $file"
             continue
         fi
 
-        # Bandingkan dengan batas 16 kHz menggunakan awk
+        # Output sederhana
         if awk "BEGIN {exit !($max_frequency < 16000)}"; then
-            printf "'%s' is likely compressed (e.g., from MP3). Maximum frequency: %s Hz.\n" "$file" "$max_frequency"
+            echo "$file: COMPRESSED"
         else
-            printf "'%s' is likely original. Maximum frequency: %s Hz.\n" "$file" "$max_frequency"
+            echo "$file: ORIGINAL"
         fi
     done
 }
