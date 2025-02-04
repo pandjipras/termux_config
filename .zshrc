@@ -474,6 +474,42 @@ hitung_kwh() {
   printf "Total biaya: Rp %.2f\n" "$total_biaya"
 }
 
+generate_ffmpeg_spectrogram() {
+    local files=()
 
+    if [[ $# -eq 0 ]]; then
+        while IFS= read -r file; do
+            files+=("$file")
+        done < <(find . -maxdepth 1 -type f -iname "*.flac")
+
+        if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No FLAC files found in the current directory."
+            return 1
+        fi
+    else
+        files=("$@")
+    fi
+
+    for file in "${files[@]}"; do
+        if [[ ! -f "$file" ]]; then
+            continue
+        fi
+
+        if ! command -v ffmpeg &> /dev/null; then
+            echo "Please install 'ffmpeg' to use this function."
+            return 1
+        fi
+
+        local output_file="${file%.*}_spectrogram.png"
+        ffmpeg -i "$file" -lavfi showspectrumpic=s=1280x720:legend=1 "$output_file"
+        
+        echo "Spectrogram saved: $output_file"
+        
+        # Jika Termux memiliki termux-open, buka gambarnya
+        if command -v termux-open &> /dev/null; then
+            termux-open "$output_file"
+        fi
+    done
+}
 
 neofetch
