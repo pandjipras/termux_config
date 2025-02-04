@@ -22,6 +22,8 @@ alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<title>[^-]+) - (?P<artist>[^(|]+)' -o '/storage/emulated/0/Music/%(artist,Unknown)s - %(title)s.%(ext)s'"
 alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
+# dibawah ini function yg di fold menggunakan vim-polygot
+
 # {{{ ytdlp cutter
 yt4cut() {
     if [ $# -lt 3 ]; then
@@ -397,7 +399,6 @@ tabungan() {
   done
 }
 # }}}
-
 
 # {{{ perkiraan_pemakaian_battery
 perkiraan_pemakaian_battery() {
