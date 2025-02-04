@@ -451,6 +451,9 @@ generate_ffmpeg_spectrogram() {
       return 1
     fi
 
+    # Menampilkan status file yang sedang diproses
+    echo "Processing: $file"
+    
     # Set batas frekuensi hingga 48 kHz
     local stop_freq=48000
     # Menentukan nama file output spectrogram di dalam folder baru
@@ -458,6 +461,9 @@ generate_ffmpeg_spectrogram() {
 
     # Menjalankan perintah ffmpeg untuk menghasilkan spectrogram dan menyimpannya di folder baru
     ffmpeg -loglevel quiet -i "$file" -lavfi "showspectrumpic=s=1280x720:legend=1:stop=$stop_freq" -frames:v 1 -update 1 "$output_file"
+
+    # Menampilkan status setelah selesai memproses
+    echo "Spectrogram saved: $output_file"
   done
 }
 # }}}
