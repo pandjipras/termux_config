@@ -24,7 +24,7 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 
 # dibawah ini function yg di fold menggunakan vim-polygot
 
-# {{{ ytdlp cutter
+# {{{ yt4cut 
 yt4cut() {
     if [ $# -lt 3 ]; then
         echo "Usage: yt4cut URL START_TIME END_TIME"
@@ -78,6 +78,47 @@ yt4cut() {
 
     rm "$OUTPUT_FILE"  # Menghapus file sementara
     echo "Video processed successfully: $FINAL_OUTPUT"
+}
+# }}}
+
+# {{{ vidcut
+vidcut() {
+    if [[ $# -ne 3 ]]; then
+        echo "Usage: vidcut <filename> <start_time> <end_time>"
+        echo "Example: vidcut video.mp4 0030 0060"
+        return 1
+    fi
+
+    input_file="$1"
+    start_time="${2:0:2}:${2:2:2}" # Mengubah format waktu dari 0030 menjadi 00:30
+    end_time="${3:0:2}:${3:2:2}"   # Mengubah format waktu dari 0060 menjadi 00:60
+    output_file="output_${2}_${3}.mp4"
+
+    if [[ ! -f $input_file ]]; then
+        echo "File $input_file tidak ditemukan!"
+        return 1
+    fi
+
+    ffmpeg -i "$input_file" -ss "$start_time" -to "$end_time" -c copy "$output_file"
+    echo "Video berhasil dipotong: $output_file"
+}
+
+volup() {
+    if [ -z "$1" ]; then
+        echo "Usage: volup <input_file> [<output_file>] [<volume_level>]"
+        return 1
+    fi
+    
+    input_file="$1"
+    output_file="${2:-volup_${input_file}}"
+    volume_level="${3:-1.5}"
+
+    if ! [[ "$volume_level" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        echo "Volume level must be a numeric value"
+        return 1
+    fi
+
+    ffmpeg -i "$input_file" -filter:a "volume=$volume_level" "$output_file"
 }
 # }}}
 
@@ -138,47 +179,6 @@ songcut() {
         # Menimpa file asli dengan hasil potongan
         mv "${input_file%.*}_cut.mp3" "$input_file"
     done
-}
-# }}}
-
-# {{{ vidcut
-vidcut() {
-    if [[ $# -ne 3 ]]; then
-        echo "Usage: vidcut <filename> <start_time> <end_time>"
-        echo "Example: vidcut video.mp4 0030 0060"
-        return 1
-    fi
-
-    input_file="$1"
-    start_time="${2:0:2}:${2:2:2}" # Mengubah format waktu dari 0030 menjadi 00:30
-    end_time="${3:0:2}:${3:2:2}"   # Mengubah format waktu dari 0060 menjadi 00:60
-    output_file="output_${2}_${3}.mp4"
-
-    if [[ ! -f $input_file ]]; then
-        echo "File $input_file tidak ditemukan!"
-        return 1
-    fi
-
-    ffmpeg -i "$input_file" -ss "$start_time" -to "$end_time" -c copy "$output_file"
-    echo "Video berhasil dipotong: $output_file"
-}
-
-volup() {
-    if [ -z "$1" ]; then
-        echo "Usage: volup <input_file> [<output_file>] [<volume_level>]"
-        return 1
-    fi
-    
-    input_file="$1"
-    output_file="${2:-volup_${input_file}}"
-    volume_level="${3:-1.5}"
-
-    if ! [[ "$volume_level" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-        echo "Volume level must be a numeric value"
-        return 1
-    fi
-
-    ffmpeg -i "$input_file" -filter:a "volume=$volume_level" "$output_file"
 }
 # }}}
 
