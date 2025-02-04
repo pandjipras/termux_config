@@ -420,6 +420,7 @@ hitung_kwh() {
   printf "Total biaya: Rp %.2f\n" "$total_biaya"
 }
 
+# {{{
 generate_ffmpeg_spectrogram() {
   local files=()
 
@@ -454,5 +455,6 @@ generate_ffmpeg_spectrogram() {
     echo "Spectrogram saved: $output_file"
   done
 }
+# }}}
 
 neofetch
