@@ -420,9 +420,13 @@ hitung_kwh() {
   printf "Total biaya: Rp %.2f\n" "$total_biaya"
 }
 
-# {{{ genereate spectogram
+# {{{ generate spectogram
 generate_ffmpeg_spectrogram() {
   local files=()
+  local output_dir="spectrograms"  # Folder untuk menyimpan gambar spectrogram
+
+  # Membuat folder baru jika belum ada
+  mkdir -p "$output_dir"
 
   if [[ $# -eq 0 ]]; then
     while IFS= read -r file; do
@@ -449,10 +453,11 @@ generate_ffmpeg_spectrogram() {
 
     # Set batas frekuensi hingga 48 kHz
     local stop_freq=48000
-    local output_file="${file%.*}_spectrogram.png"
+    # Menentukan nama file output spectrogram di dalam folder baru
+    local output_file="$output_dir/${file%.*}_spectrogram.png"
 
-    ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" -frames:v 1 -update 1 "$output_file"
-    echo "Spectrogram saved: $output_file"
+    # Menjalankan perintah ffmpeg untuk menghasilkan spectrogram dan menyimpannya di folder baru
+    ffmpeg -loglevel quiet -i "$file" -lavfi "showspectrumpic=s=1280x720:legend=1:stop=$stop_freq" -frames:v 1 -update 1 "$output_file"
   done
 }
 # }}}
