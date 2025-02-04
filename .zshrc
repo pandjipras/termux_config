@@ -80,6 +80,7 @@ yt4cut() {
 flac_accuracy() {
     local files=()
 
+    # Jika tidak ada argumen, cari file FLAC di direktori saat ini
     if [[ $# -eq 0 ]]; then
         while IFS= read -r file; do
             files+=("$file")
@@ -93,31 +94,42 @@ flac_accuracy() {
         files=("$@")
     fi
 
-    if ! command -v ffmpeg &> /dev/null; then
-        echo "Please install 'ffmpeg' to use this function."
+    # Cek apakah sox terpasang
+    if ! command -v sox &> /dev/null; then
+        echo "Please install 'sox' to use this function."
         return 1
     fi
 
+    # Proses tiap file FLAC
     for file in "${files[@]}"; do
         if [[ ! -f "$file" ]]; then
             continue
         fi
 
-        # Menggunakan ffmpeg untuk mengekstrak spektrum dan mencari frekuensi maksimum
-        local max_frequency
-        max_frequency=$(ffmpeg -i "$file" -af "spectrum=f=1000" -f null - 2>&1 | grep -oP "max frequency: \K[0-9]+")
+        # Analisis spektrum menggunakan sox
+        local spectrum_output
+        spectrum_output=$(sox "$file" -n stat 2>&1)
 
-        # Jika tidak ada hasil frekuensi
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+$ ]]; then
+        # Ambil nilai "Rough frequency"
+        local max_frequency
+        max_frequency=$(echo "$spectrum_output" | grep "Rough frequency" | awk '{print $3}')
+
+        # Jika nilai frekuensi tidak ditemukan, coba "Maximum delta"
+        if [[ -z "$max_frequency" ]]; then
+            max_frequency=$(echo "$spectrum_output" | grep "Maximum delta" | awk '{print $3}')
+        fi
+
+        # Jika tetap tidak ditemukan, file ini tidak dapat dianalisis
+        if [[ -z "$max_frequency" ]]; then
             echo "$file: UNKNOWN"
             continue
         fi
 
-        # Tentukan apakah file tersebut COMPRESSED atau ORIGINAL berdasarkan frekuensi
-        if (( max_frequency < 16000 )); then
-            echo "$file: COMPRESSED (Max Frequency: ${max_frequency} Hz)"
+        # Tentukan apakah file lossless atau compressed berdasarkan frekuensi
+        if (( $(echo "$max_frequency >= 16000" | bc -l) )); then
+            echo "$file: LOSSLESS (Max Frequency: $max_frequency Hz)"
         else
-            echo "$file: ORIGINAL (Max Frequency: ${max_frequency} Hz)"
+            echo "$file: COMPRESSED (Max Frequency: $max_frequency Hz)"
         fi
     done
 }
