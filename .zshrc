@@ -105,11 +105,12 @@ flac_accuracy() {
 
         # Ambil data spektrum menggunakan sox
         local max_frequency
-        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
-
+        max_frequency=$(sox "$file" -n stat 2>&1 | grep -oP "Rough frequency: \K[0-9.]+")
+        
         # Jika max_frequency tidak valid, coba alternatif
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Maximum delta:/ {print $3}')
+            # Coba ambil data frekuensi tertinggi secara langsung
+            max_frequency=$(sox "$file" -n spectrogram -r 1 -o /dev/null 2>&1 | grep -oP "Maximum frequency: \K[0-9.]+")
         fi
 
         # Jika tetap kosong, tandai sebagai UNKNOWN
