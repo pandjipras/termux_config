@@ -93,8 +93,8 @@ flac_accuracy() {
         files=("$@")
     fi
 
-    if ! command -v ffmpeg &> /dev/null || ! command -v ffprobe &> /dev/null; then
-        echo "Please install 'ffmpeg' and 'ffprobe' to use this function."
+    if ! command -v sox &> /dev/null; then
+        echo "Please install 'sox' to use this function."
         return 1
     fi
 
@@ -103,29 +103,31 @@ flac_accuracy() {
             continue
         fi
 
-        # Ambil informasi spektrum menggunakan ffmpeg dan simpan ke file CSV
-        ffmpeg -i "$file" -filter_complex "[0:a]astats=metadata=1:reset=1" -f null - 2>&1 | grep -oP '(?<=Cumulative cutoff frequency: )\d+' | tail -n 1 > freq_data.txt
-
-        # Ambil frekuensi maksimum dari file CSV
+        # Ambil data spektrum menggunakan sox
         local max_frequency
-        max_frequency=$(cat freq_data.txt)
+        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
 
-        # Jika tidak ditemukan, tandai sebagai UNKNOWN
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+$ ]]; then
+        # Jika max_frequency tidak valid, coba alternatif
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Maximum delta:/ {print $3}')
+        fi
+
+        # Jika tetap kosong, tandai sebagai UNKNOWN
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
             echo "$file: UNKNOWN"
             continue
         fi
 
-        # Output hasil sederhana berdasarkan batas 16 kHz
+        # Konversi ke Hz (jika masih dalam format angka desimal)
+        max_frequency=$(printf "%.0f\n" "$max_frequency")
+
+        # Pastikan batasan yang benar
         if (( max_frequency < 16000 )); then
             echo "$file: COMPRESSED (Max Frequency: ${max_frequency} Hz)"
         else
             echo "$file: ORIGINAL (Max Frequency: ${max_frequency} Hz)"
         fi
     done
-
-    # Hapus file sementara
-    rm -f freq_data.txt
 }
 
 git-upload() {
