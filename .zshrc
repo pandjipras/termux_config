@@ -500,15 +500,19 @@ generate_ffmpeg_spectrogram() {
             return 1
         fi
 
-        local output_file="${file%.*}_spectrogram.png"
-        ffmpeg -i "$file" -lavfi showspectrumpic=s=1280x720:legend=1 "$output_file"
-        
-        echo "Spectrogram saved: $output_file"
-        
-        # Jika Termux memiliki termux-open, buka gambarnya
-        if command -v termux-open &> /dev/null; then
-            termux-open "$output_file"
+        local sample_rate=$(soxi -r "$file")
+        local stop_freq=22050
+
+        if [[ "$sample_rate" -ge 48000 ]]; then
+            stop_freq=24000
+        elif [[ "$sample_rate" -ge 96000 ]]; then
+            stop_freq=48000
         fi
+
+        local output_file="${file%.*}_spectrogram.png"
+        ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" "$output_file"
+
+        echo "Spectrogram saved: $output_file"
     done
 }
 
