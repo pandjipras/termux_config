@@ -503,7 +503,7 @@ generate_ffmpeg_spectrogram() {
         local stop_freq=30000  # Set batas frekuensi hingga 30 kHz
         local output_file="${file%.*}_spectrogram.png"
 
-        ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" "$output_file"
+        ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" -frames:v 1 -update 1 "$output_file"
 
         echo "Spectrogram saved: $output_file"
     done
