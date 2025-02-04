@@ -103,10 +103,12 @@ flac_accuracy() {
             continue
         fi
 
-        # Ambil spektrum menggunakan FFmpeg dan cari frekuensi maksimum
+        # Ambil informasi spektrum menggunakan ffmpeg dan simpan ke file CSV
+        ffmpeg -i "$file" -filter_complex "[0:a]astats=metadata=1:reset=1" -f null - 2>&1 | grep -oP '(?<=Cumulative cutoff frequency: )\d+' | tail -n 1 > freq_data.txt
+
+        # Ambil frekuensi maksimum dari file CSV
         local max_frequency
-        max_frequency=$(ffmpeg -i "$file" -filter_complex "[0:a]showspectrum=mode=combined:color=intensity:scale=cbrt:legend=0" -frames:v 1 -y spectrum.png 2>&1 \
-            | grep -oP '(?<=frequency: )\d+' | sort -nr | head -n 1)
+        max_frequency=$(cat freq_data.txt)
 
         # Jika tidak ditemukan, tandai sebagai UNKNOWN
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+$ ]]; then
@@ -121,6 +123,9 @@ flac_accuracy() {
             echo "$file: ORIGINAL (Max Frequency: ${max_frequency} Hz)"
         fi
     done
+
+    # Hapus file sementara
+    rm -f freq_data.txt
 }
 
 git-upload() {
