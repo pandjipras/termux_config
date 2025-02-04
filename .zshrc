@@ -93,8 +93,8 @@ flac_accuracy() {
         files=("$@")
     fi
 
-    if ! command -v sox &> /dev/null; then
-        echo "Please install 'sox' to use this function."
+    if ! command -v ffmpeg &> /dev/null; then
+        echo "Please install 'ffmpeg' to use this function."
         return 1
     fi
 
@@ -103,24 +103,15 @@ flac_accuracy() {
             continue
         fi
 
-        # Ambil data spektrum menggunakan sox
+        # Cek menggunakan ffmpeg untuk mendapatkan frekuensi
         local max_frequency
-        max_frequency=$(sox "$file" -n stat 2>&1 | grep -oP "Rough frequency: \K[0-9.]+")
-        
-        # Jika max_frequency tidak valid, coba alternatif
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            # Coba ambil data frekuensi tertinggi secara langsung
-            max_frequency=$(sox "$file" -n spectrogram -r 1 -o /dev/null 2>&1 | grep -oP "Maximum frequency: \K[0-9.]+")
-        fi
+        max_frequency=$(ffmpeg -i "$file" 2>&1 | grep -oP "Stream #0:0.*: Audio: flac, [0-9]+ Hz" | awk -F ", " '{print $2}' | awk '{print $1}')
 
-        # Jika tetap kosong, tandai sebagai UNKNOWN
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        # Jika max_frequency tidak valid
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+$ ]]; then
             echo "$file: UNKNOWN"
             continue
         fi
-
-        # Konversi ke Hz (jika masih dalam format angka desimal)
-        max_frequency=$(printf "%.0f\n" "$max_frequency")
 
         # Pastikan batasan yang benar
         if (( max_frequency < 16000 )); then
