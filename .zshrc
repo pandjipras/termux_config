@@ -500,16 +500,9 @@ generate_ffmpeg_spectrogram() {
             return 1
         fi
 
-        local sample_rate=$(soxi -r "$file")
-        local stop_freq=22050
-
-        if [[ "$sample_rate" -ge 48000 ]]; then
-            stop_freq=24000
-        elif [[ "$sample_rate" -ge 96000 ]]; then
-            stop_freq=48000
-        fi
-
+        local stop_freq=24000  # Default ke 24 kHz (untuk 48 kHz sample rate)
         local output_file="${file%.*}_spectrogram.png"
+
         ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" "$output_file"
 
         echo "Spectrogram saved: $output_file"
