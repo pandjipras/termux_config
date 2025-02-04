@@ -22,6 +22,7 @@ alias ins="apt install"
 alias yt3="yt-dlp -x --audio-format mp3 --audio-quality 0 --embed-thumbnail --embed-metadata --sponsorblock-remove all --progress --parse-metadata 'title:(?P<title>[^-]+) - (?P<artist>[^(|]+)' -o '/storage/emulated/0/Music/%(artist,Unknown)s - %(title)s.%(ext)s'"
 alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-format mp4 -o '/storage/emulated/0/Download/Ytdlp/%(title)s.%(ext)s'"
 
+# {{{ ytdlp cutter
 yt4cut() {
     if [ $# -lt 3 ]; then
         echo "Usage: yt4cut URL START_TIME END_TIME"
@@ -76,7 +77,9 @@ yt4cut() {
     rm "$OUTPUT_FILE"  # Menghapus file sementara
     echo "Video processed successfully: $FINAL_OUTPUT"
 }
+# }}}
 
+# {{{ git-upload
 git-upload() {
     cd ~/termux_config || return
 
@@ -103,7 +106,9 @@ git-upload() {
         echo "Tidak ada perubahan yang terdeteksi"
     fi
 }
+# }}}
 
+# {{{ songcut
 songcut() {
     local temp_output_file="_temp_output.mp3"
 
@@ -132,7 +137,9 @@ songcut() {
         mv "${input_file%.*}_cut.mp3" "$input_file"
     done
 }
+# }}}
 
+# {{{ vidcut
 vidcut() {
     if [[ $# -ne 3 ]]; then
         echo "Usage: vidcut <filename> <start_time> <end_time>"
@@ -171,7 +178,9 @@ volup() {
 
     ffmpeg -i "$input_file" -filter:a "volume=$volume_level" "$output_file"
 }
+# }}}
 
+# {{{ resistor_calc
 resistor_calc() {
     if [[ $# -ne 3 ]]; then
         echo "Penggunaan: resistor_calc <Vin> <Vout> <Arus dalam Ampere>"
@@ -214,7 +223,9 @@ resistor_calc() {
 
     echo "Rekomendasi watt resistor: $Resistor_Watt"
 }
+# }}}
 
+# {{{ search_text
 search() {
     if [[ $# -eq 0 ]]; then
         echo "Usage: search <text>"
@@ -274,7 +285,9 @@ search() {
         echo "Pilihan tidak valid."
     fi
 }
+# }}}
 
+# {{{ perbandingan_harga
 perbandingan_harga() {
     # Fungsi untuk menghitung harga per 1 gram/ml
     calculate_price_per_unit() {
@@ -319,7 +332,9 @@ perbandingan_harga() {
         echo "Kedua produk memiliki harga yang sama per gram/ml."
     fi
 }
+# }}}
 
+# {{{ tabungan
 tabungan() {
   while true; do
     # Meminta input per hari menabung
@@ -381,8 +396,10 @@ tabungan() {
     unset per_hari nominal total_hari tahun bulan hari hasil
   done
 }
+# }}}
 
 
+# {{{ perkiraan_pemakaian_battery
 perkiraan_pemakaian_battery() {
     # Input watt
     echo "Masukkan daya beban (Watt):"
@@ -401,7 +418,9 @@ perkiraan_pemakaian_battery() {
     # Output hasil
     echo "Baterai akan bertahan selama: $usage_time jam."
 }
+# }}}
 
+# {{{ hitung kwh
 hitung_kwh() {
   local waktu_penggunaan jam_penggunaan daya kwh biaya_per_kwh total_biaya total_kwh
   
@@ -419,6 +438,7 @@ hitung_kwh() {
   printf "Total penggunaan kWh: %.2f kWh\n" "$kwh"
   printf "Total biaya: Rp %.2f\n" "$total_biaya"
 }
+# }}}
 
 # {{{ generate spectogram
 generate_ffmpeg_spectrogram() {
