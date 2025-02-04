@@ -421,38 +421,38 @@ hitung_kwh() {
 }
 
 generate_ffmpeg_spectrogram() {
-    local files=()
+  local files=()
 
-    if [[ $# -eq 0 ]]; then
-        while IFS= read -r file; do
-            files+=("$file")
-        done < <(find . -maxdepth 1 -type f -iname "*.flac")
+  if [[ $# -eq 0 ]]; then
+    while IFS= read -r file; do
+      files+=("$file")
+    done < <(find . -maxdepth 1 -type f -iname "*.flac")
+    
+    if [[ ${#files[@]} -eq 0 ]]; then
+      echo "No FLAC files found in the current directory."
+      return 1
+    fi
+  else
+    files=("$@")
+  fi
 
-        if [[ ${#files[@]} -eq 0 ]]; then
-            echo "No FLAC files found in the current directory."
-            return 1
-        fi
-    else
-        files=("$@")
+  for file in "${files[@]}"; do
+    if [[ ! -f "$file" ]]; then
+      continue
     fi
 
-    for file in "${files[@]}"; do
-        if [[ ! -f "$file" ]]; then
-            continue
-        fi
+    if ! command -v ffmpeg &> /dev/null; then
+      echo "Please install 'ffmpeg' to use this function."
+      return 1
+    fi
 
-        if ! command -v ffmpeg &> /dev/null; then
-            echo "Please install 'ffmpeg' to use this function."
-            return 1
-        fi
+    # Set batas frekuensi hingga 48 kHz
+    local stop_freq=48000
+    local output_file="${file%.*}_spectrogram.png"
 
-        local stop_freq=30000  # Set batas frekuensi hingga 30 kHz
-        local output_file="${file%.*}_spectrogram.png"
-
-        ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" -frames:v 1 -update 1 "$output_file"
-
-        echo "Spectrogram saved: $output_file"
-    done
+    ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" -frames:v 1 -update 1 "$output_file"
+    echo "Spectrogram saved: $output_file"
+  done
 }
 
 neofetch
