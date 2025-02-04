@@ -93,8 +93,8 @@ flac_accuracy() {
         files=("$@")
     fi
 
-    if ! command -v ffmpeg &> /dev/null; then
-        echo "Please install 'ffmpeg' to use this function."
+    if ! command -v ffmpeg &> /dev/null || ! command -v ffprobe &> /dev/null; then
+        echo "Please install 'ffmpeg' and 'ffprobe' to use this function."
         return 1
     fi
 
@@ -103,11 +103,12 @@ flac_accuracy() {
             continue
         fi
 
-        # Gunakan FFmpeg untuk ekstrak frekuensi tertinggi
+        # Ambil spektrum menggunakan FFmpeg dan cari frekuensi maksimum
         local max_frequency
-        max_frequency=$(ffmpeg -i "$file" -filter_complex "astats=metadata=1:reset=1" -f null - 2>&1 | awk -F ': ' '/Cumulative cut-off frequency:/ {print $2}' | awk '{print int($1)}' | sort -nr | head -n 1)
+        max_frequency=$(ffmpeg -i "$file" -filter_complex "[0:a]showspectrum=mode=combined:color=intensity:scale=cbrt:legend=0" -frames:v 1 -y spectrum.png 2>&1 \
+            | grep -oP '(?<=frequency: )\d+' | sort -nr | head -n 1)
 
-        # Jika tidak bisa mendapatkan frekuensi, tandai sebagai UNKNOWN
+        # Jika tidak ditemukan, tandai sebagai UNKNOWN
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+$ ]]; then
             echo "$file: UNKNOWN"
             continue
@@ -115,9 +116,9 @@ flac_accuracy() {
 
         # Output hasil sederhana berdasarkan batas 16 kHz
         if (( max_frequency < 16000 )); then
-            echo "$file: COMPRESSED"
+            echo "$file: COMPRESSED (Max Frequency: ${max_frequency} Hz)"
         else
-            echo "$file: ORIGINAL"
+            echo "$file: ORIGINAL (Max Frequency: ${max_frequency} Hz)"
         fi
     done
 }
