@@ -77,68 +77,6 @@ yt4cut() {
     echo "Video processed successfully: $FINAL_OUTPUT"
 }
 
-flac_accuracy() {
-    local files=()
-
-    # Jika tidak ada argumen, cari file FLAC di direktori saat ini
-    if [[ $# -eq 0 ]]; then
-        while IFS= read -r file; do
-            files+=("$file")
-        done < <(find . -maxdepth 1 -type f -iname "*.flac")
-
-        if [[ ${#files[@]} -eq 0 ]]; then
-            echo "No FLAC files found in the current directory."
-            return 1
-        fi
-    else
-        files=("$@")
-    fi
-
-    # Proses tiap file FLAC
-    for file in "${files[@]}"; do
-        if [[ ! -f "$file" ]]; then
-            continue
-        fi
-
-        # Cek apakah sox terpasang
-        if ! command -v sox &> /dev/null; then
-            echo "Please install 'sox' to use this function."
-            return 1
-        fi
-
-        # Periksa apakah file benar FLAC
-        if ! soxi -t "$file" | grep -qi "flac"; then
-            continue
-        fi
-
-        # Ambil data spektrum menggunakan sox
-        local max_frequency
-        local avg_frequency
-        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
-        
-        # Jika "Rough frequency" kosong, coba menggunakan "Maximum delta"
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Maximum delta:/ {print $3}')
-        fi
-
-        # Jika masih kosong, tidak dapat menentukan
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "$file: UNKNOWN"
-            continue
-        fi
-
-        # Ambil rata-rata frekuensi dari file
-        avg_frequency=$(sox "$file" -n stat 2>&1 | awk '/Mean    norm:/ {print $3}')
-
-        # Menampilkan hasil rata-rata frekuensi dan kategori
-        if awk "BEGIN {exit !($avg_frequency >= 16000)}"; then
-            echo "$file: LOSSLESS (Avg Frequency: $avg_frequency Hz)"
-        else
-            echo "$file: COMPRESSED (Avg Frequency: $avg_frequency Hz)"
-        fi
-    done
-}
-
 git-upload() {
     cd ~/termux_config || return
 
