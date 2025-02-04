@@ -103,17 +103,17 @@ flac_accuracy() {
             continue
         fi
 
-        # Cek menggunakan ffmpeg untuk mendapatkan frekuensi
+        # Menggunakan ffmpeg untuk mengekstrak spektrum dan mencari frekuensi maksimum
         local max_frequency
-        max_frequency=$(ffmpeg -i "$file" 2>&1 | grep -oP "Stream #0:0.*: Audio: flac, [0-9]+ Hz" | awk -F ", " '{print $2}' | awk '{print $1}')
+        max_frequency=$(ffmpeg -i "$file" -af "spectrum=f=1000" -f null - 2>&1 | grep -oP "max frequency: \K[0-9]+")
 
-        # Jika max_frequency tidak valid
+        # Jika tidak ada hasil frekuensi
         if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+$ ]]; then
             echo "$file: UNKNOWN"
             continue
         fi
 
-        # Pastikan batasan yang benar
+        # Tentukan apakah file tersebut COMPRESSED atau ORIGINAL berdasarkan frekuensi
         if (( max_frequency < 16000 )); then
             echo "$file: COMPRESSED (Max Frequency: ${max_frequency} Hz)"
         else
