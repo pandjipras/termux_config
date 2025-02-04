@@ -94,9 +94,9 @@ flac_accuracy() {
         files=("$@")
     fi
 
-    # Cek apakah sox terpasang
-    if ! command -v sox &> /dev/null; then
-        echo "Please install 'sox' to use this function."
+    # Cek apakah ffmpeg terpasang
+    if ! command -v ffmpeg &> /dev/null; then
+        echo "Please install 'ffmpeg' to use this function."
         return 1
     fi
 
@@ -106,30 +106,17 @@ flac_accuracy() {
             continue
         fi
 
-        # Analisis spektrum menggunakan sox
-        local spectrum_output
-        spectrum_output=$(sox "$file" -n stat 2>&1)
+        # Mendapatkan sample rate dan frekuensi melalui ffmpeg
+        local sample_rate
+        sample_rate=$(ffmpeg -i "$file" 2>&1 | grep -oP 'Audio: .* (\d+) Hz' | sed -E 's/.* (\d+) Hz/\1/')
 
-        # Ambil nilai "Rough frequency"
-        local max_frequency
-        max_frequency=$(echo "$spectrum_output" | grep "Rough frequency" | awk '{print $3}')
-
-        # Jika nilai frekuensi tidak ditemukan, coba "Maximum delta"
-        if [[ -z "$max_frequency" ]]; then
-            max_frequency=$(echo "$spectrum_output" | grep "Maximum delta" | awk '{print $3}')
-        fi
-
-        # Jika tetap tidak ditemukan, file ini tidak dapat dianalisis
-        if [[ -z "$max_frequency" ]]; then
+        # Tentukan apakah file lossless atau compressed berdasarkan sample rate
+        if [[ -z "$sample_rate" || ! "$sample_rate" =~ ^[0-9]+$ ]]; then
             echo "$file: UNKNOWN"
-            continue
-        fi
-
-        # Tentukan apakah file lossless atau compressed berdasarkan frekuensi
-        if (( $(echo "$max_frequency >= 16000" | bc -l) )); then
-            echo "$file: LOSSLESS (Max Frequency: $max_frequency Hz)"
+        elif (( sample_rate >= 44100 )); then
+            echo "$file: LOSSLESS (Sample Rate: $sample_rate Hz)"
         else
-            echo "$file: COMPRESSED (Max Frequency: $max_frequency Hz)"
+            echo "$file: COMPRESSED (Sample Rate: $sample_rate Hz)"
         fi
     done
 }
