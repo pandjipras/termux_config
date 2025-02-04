@@ -500,7 +500,7 @@ generate_ffmpeg_spectrogram() {
             return 1
         fi
 
-        local stop_freq=24000  # Default ke 24 kHz (untuk 48 kHz sample rate)
+        local stop_freq=30000  # Set batas frekuensi hingga 30 kHz
         local output_file="${file%.*}_spectrogram.png"
 
         ffmpeg -i "$file" -lavfi "showspectrumpic=s=1920x1080:legend=1:stop=$stop_freq" "$output_file"
