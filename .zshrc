@@ -420,7 +420,7 @@ hitung_kwh() {
   printf "Total biaya: Rp %.2f\n" "$total_biaya"
 }
 
-# {{{
+# {{{ genereate spectogram
 generate_ffmpeg_spectrogram() {
   local files=()
 
