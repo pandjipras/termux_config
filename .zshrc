@@ -93,37 +93,28 @@ flac_accuracy() {
         files=("$@")
     fi
 
+    if ! command -v ffmpeg &> /dev/null; then
+        echo "Please install 'ffmpeg' to use this function."
+        return 1
+    fi
+
     for file in "${files[@]}"; do
         if [[ ! -f "$file" ]]; then
             continue
         fi
 
-        if ! command -v sox &> /dev/null; then
-            echo "Please install 'sox' to use this function."
-            return 1
-        fi
-
-        if ! soxi -t "$file" | grep -qi "flac"; then
-            continue
-        fi
-
-        # Ambil data spektrum
+        # Gunakan FFmpeg untuk ekstrak frekuensi tertinggi
         local max_frequency
-        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
+        max_frequency=$(ffmpeg -i "$file" -filter_complex "astats=metadata=1:reset=1" -f null - 2>&1 | awk -F ': ' '/Cumulative cut-off frequency:/ {print $2}' | awk '{print int($1)}' | sort -nr | head -n 1)
 
-        # Jika "Rough frequency" kosong, coba gunakan "Maximum delta"
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Maximum delta:/ {print $3}')
-        fi
-
-        # Jika tetap kosong, tidak bisa menentukan
-        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        # Jika tidak bisa mendapatkan frekuensi, tandai sebagai UNKNOWN
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+$ ]]; then
             echo "$file: UNKNOWN"
             continue
         fi
 
-        # Output sederhana
-        if awk "BEGIN {exit !($max_frequency < 16000)}"; then
+        # Output hasil sederhana berdasarkan batas 16 kHz
+        if (( max_frequency < 16000 )); then
             echo "$file: COMPRESSED"
         else
             echo "$file: ORIGINAL"
