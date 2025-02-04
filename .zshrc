@@ -94,29 +94,47 @@ flac_accuracy() {
         files=("$@")
     fi
 
-    # Cek apakah ffmpeg terpasang
-    if ! command -v ffmpeg &> /dev/null; then
-        echo "Please install 'ffmpeg' to use this function."
-        return 1
-    fi
-
     # Proses tiap file FLAC
     for file in "${files[@]}"; do
         if [[ ! -f "$file" ]]; then
             continue
         fi
 
-        # Mendapatkan sample rate dan frekuensi melalui ffmpeg
-        local sample_rate
-        sample_rate=$(ffmpeg -i "$file" 2>&1 | grep -oP 'Audio: .* (\d+) Hz' | sed -E 's/.* (\d+) Hz/\1/')
+        # Cek apakah sox terpasang
+        if ! command -v sox &> /dev/null; then
+            echo "Please install 'sox' to use this function."
+            return 1
+        fi
 
-        # Tentukan apakah file lossless atau compressed berdasarkan sample rate
-        if [[ -z "$sample_rate" || ! "$sample_rate" =~ ^[0-9]+$ ]]; then
+        # Periksa apakah file benar FLAC
+        if ! soxi -t "$file" | grep -qi "flac"; then
+            continue
+        fi
+
+        # Ambil data spektrum menggunakan sox
+        local max_frequency
+        local avg_frequency
+        max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Rough frequency:/ {print $3}')
+        
+        # Jika "Rough frequency" kosong, coba menggunakan "Maximum delta"
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            max_frequency=$(sox "$file" -n stat 2>&1 | awk '/Maximum delta:/ {print $3}')
+        fi
+
+        # Jika masih kosong, tidak dapat menentukan
+        if [[ -z "$max_frequency" || ! "$max_frequency" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
             echo "$file: UNKNOWN"
-        elif (( sample_rate >= 44100 )); then
-            echo "$file: LOSSLESS (Sample Rate: $sample_rate Hz)"
+            continue
+        fi
+
+        # Ambil rata-rata frekuensi dari file
+        avg_frequency=$(sox "$file" -n stat 2>&1 | awk '/Mean    norm:/ {print $3}')
+
+        # Menampilkan hasil rata-rata frekuensi dan kategori
+        if awk "BEGIN {exit !($avg_frequency >= 16000)}"; then
+            echo "$file: LOSSLESS (Avg Frequency: $avg_frequency Hz)"
         else
-            echo "$file: COMPRESSED (Sample Rate: $sample_rate Hz)"
+            echo "$file: COMPRESSED (Avg Frequency: $avg_frequency Hz)"
         fi
     done
 }
