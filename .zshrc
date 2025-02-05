@@ -24,8 +24,80 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 
 # dibawah ini function yg di fold menggunakan vim-polygot
 
-# {{{ spotipy
-# 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
+ #{{{ genius lyric finder
+## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
+#add_lyrics_to_songs() {
+    #if [[ -z $(ls *.mp3 2>/dev/null) ]]; then
+        #echo "Tidak ada file MP3 di folder saat ini."
+        #return 1
+    #fi
+
+    #python3 <<EOF
+#import os
+#import re
+#from lyricsgenius import Genius
+#from mutagen.id3 import ID3, USLT
+
+## Genius API Key
+#GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
+
+## Inisialisasi Genius API
+#genius = Genius(GENIUS_API_KEY)
+#genius.verbose = False  # Menonaktifkan log pencarian bawaan
+
+#mp3_files = [f for f in os.listdir() if f.endswith(".mp3")]
+
+#if not mp3_files:
+    #print("Tidak ada file MP3 untuk diproses.")
+    #exit(1)
+
+#def bersihkan_lirik(lirik, judul):
+    ## Hapus bagian "You might also like" dan "Contributors"
+    #lirik = re.sub(r"You might also like.*", "", lirik, flags=re.DOTALL)
+    #lirik = re.sub(r"Contributors.*", "", lirik, flags=re.DOTALL)
+
+    ## Pisahkan lirik menjadi baris-baris
+    #lines = lirik.strip().split("\n")
+
+    ## Jika baris pertama mengandung judul lagu, hapus
+    #if lines and judul.lower() in lines[0].lower():
+        #lines.pop(0)
+
+    ## Pastikan "[Verse 1]" dan bagian lirik lainnya tetap ada
+    #lirik_baru = f"Lirik: {judul}\n\n" + "\n".join(lines).strip()
+    #return lirik_baru
+
+#for file_path in mp3_files:
+    #try:
+        #audio = ID3(file_path)
+        #title = audio.get("TIT2").text[0] if "TIT2" in audio else None
+        #artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
+
+        #if not title or not artist:
+            #print(f"Skipping {file_path}: Judul atau artis tidak ditemukan. ❌\n")
+            #continue
+
+        #print(f"Mencari lirik untuk: {title} - {artist}")
+
+        #song = genius.search_song(title, artist)
+        #if song:
+            #lyrics = bersihkan_lirik(song.lyrics, title)
+            #print(f"Lirik ditemukan untuk {title}! ✅")
+
+            #audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
+            #audio.save()
+            #print(f"Lirik berhasil ditambahkan ke {file_path}! ✅\n")
+        #else:
+            #print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
+    #except Exception as e:
+        #print(f"Error memproses {file_path}: {e} ❌\n")
+#EOF
+#}
+
+## }}}
+
+# {{{ musixmatch lyric finder
+# ea0wjot51y3ivbo4g8ea04bi2szy4fka
 add_lyrics_to_songs() {
     if [[ -z $(ls *.mp3 2>/dev/null) ]]; then
         echo "Tidak ada file MP3 di folder saat ini."
@@ -35,22 +107,59 @@ add_lyrics_to_songs() {
     python3 <<EOF
 import os
 import re
-from lyricsgenius import Genius
+from musixmatch import Musixmatch
 from mutagen.id3 import ID3, USLT
 
-# Genius API Key
-GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
+# Musixmatch API Key
+MUSIXMATCH_API_KEY = ea0wjot51y3ivbo4g8ea04bi2szy4fka
 
-# Inisialisasi Genius API
-genius = Genius(GENIUS_API_KEY)
-genius.verbose = False  # Menonaktifkan log pencarian bawaan
+# Inisialisasi Musixmatch API
+musixmatch = Musixmatch(MUSIXMATCH_API_KEY)
 
-mp3_files = [f for f in os.listdir() if f.endswith(".mp3")]
+# Fungsi untuk mencari lirik dari Musixmatch API dan menambahkannya ke file musik
+def add_lyrics_to_songs():
+    if not any(f.endswith('.mp3') for f in os.listdir()):
+        print("Tidak ada file MP3 di folder saat ini.")
+        return
 
-if not mp3_files:
-    print("Tidak ada file MP3 untuk diproses.")
-    exit(1)
+    mp3_files = [f for f in os.listdir() if f.endswith('.mp3')]
 
+    for file_path in mp3_files:
+        try:
+            audio = ID3(file_path)
+            title = audio.get("TIT2").text[0] if "TIT2" in audio else None
+            artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
+
+            if not title or not artist:
+                print(f"Skipping {file_path}: Judul atau artis tidak ditemukan. ❌\n")
+                continue
+
+            print(f"Mencari lirik untuk: {title} - {artist}")
+
+            # Cari lirik menggunakan Musixmatch API
+            track_info = musixmatch.matcher_song_get(title, artist)
+            if track_info['message']['header']['status_code'] == 200:
+                lyrics_body = track_info['message']['body']
+                if 'lyrics' in lyrics_body:
+                    lyrics = lyrics_body['lyrics']['lyrics_body']
+                    print(f"Lirik ditemukan untuk {title}! ✅")
+                    
+                    # Bersihkan lirik (hilangkan "Contributor" dan teks lainnya)
+                    lyrics = bersihkan_lirik(lyrics, title)
+                    
+                    # Menambahkannya ke metadata file musik
+                    audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
+                    audio.save()
+                    print(f"Lirik berhasil ditambahkan ke {file_path}! ✅\n")
+                else:
+                    print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
+            else:
+                print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
+
+        except Exception as e:
+            print(f"Error memproses {file_path}: {e} ❌\n")
+
+# Fungsi untuk membersihkan lirik dan menghapus bagian yang tidak relevan
 def bersihkan_lirik(lirik, judul):
     # Hapus bagian "You might also like" dan "Contributors"
     lirik = re.sub(r"You might also like.*", "", lirik, flags=re.DOTALL)
@@ -59,41 +168,18 @@ def bersihkan_lirik(lirik, judul):
     # Pisahkan lirik menjadi baris-baris
     lines = lirik.strip().split("\n")
 
-    # Jika baris pertama mengandung judul lagu, hapus
+    # Pastikan baris pertama adalah judul lagu dan hapus jika ada
     if lines and judul.lower() in lines[0].lower():
         lines.pop(0)
 
-    # Pastikan "[Verse 1]" dan bagian lirik lainnya tetap ada
+    # Format lirik dengan tambahan "Lirik: [Judul Lagu]"
     lirik_baru = f"Lirik: {judul}\n\n" + "\n".join(lines).strip()
     return lirik_baru
 
-for file_path in mp3_files:
-    try:
-        audio = ID3(file_path)
-        title = audio.get("TIT2").text[0] if "TIT2" in audio else None
-        artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
-
-        if not title or not artist:
-            print(f"Skipping {file_path}: Judul atau artis tidak ditemukan. ❌\n")
-            continue
-
-        print(f"Mencari lirik untuk: {title} - {artist}")
-
-        song = genius.search_song(title, artist)
-        if song:
-            lyrics = bersihkan_lirik(song.lyrics, title)
-            print(f"Lirik ditemukan untuk {title}! ✅")
-
-            audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
-            audio.save()
-            print(f"Lirik berhasil ditambahkan ke {file_path}! ✅\n")
-        else:
-            print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
-    except Exception as e:
-        print(f"Error memproses {file_path}: {e} ❌\n")
+# Jalankan fungsi untuk menambahkan lirik
+add_lyrics_to_songs()
 EOF
 }
-
 # }}}
 
 # {{{ yt4cut 
