@@ -25,16 +25,17 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 # dibawah ini function yg di fold menggunakan vim-polygot
 
 # {{{ spotipy
-add_lyrics_to_song() {
-    if [[ -z "$1" ]]; then
-        echo "Gunakan: add_lyrics_to_song <file_mp3>"
+add_lyrics_to_songs() {
+    # Pastikan ada file MP3 di folder saat ini
+    if [[ -z $(ls *.mp3 2>/dev/null) ]]; then
+        echo "Tidak ada file MP3 di folder saat ini."
         return 1
     fi
 
     python3 <<EOF
+import os
 from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
-import sys
 
 # Genius API Key
 GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
@@ -42,34 +43,40 @@ GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536S
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
 
-# Path file musik dari argumen Zsh
-file_path = sys.argv[1]
+# Ambil semua file MP3 di folder saat ini
+mp3_files = [f for f in os.listdir() if f.endswith(".mp3")]
 
-# Baca metadata file musik
-audio = ID3(file_path)
+if not mp3_files:
+    print("Tidak ada file MP3 untuk diproses.")
+    exit(1)
 
-# Ambil judul dan artis dari metadata
-title = audio.get("TIT2").text[0] if "TIT2" in audio else None
-artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
+for file_path in mp3_files:
+    try:
+        # Baca metadata file musik
+        audio = ID3(file_path)
+        title = audio.get("TIT2").text[0] if "TIT2" in audio else None
+        artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
 
-if not title or not artist:
-    print("Judul atau artis tidak ditemukan di metadata file.")
-    sys.exit(1)
+        if not title or not artist:
+            print(f"Skipping {file_path}: Judul atau artis tidak ditemukan.")
+            continue
 
-print(f"Mencari lirik untuk: {title} - {artist}")
+        print(f"Mencari lirik untuk: {title} - {artist}")
 
-# Cari lirik di Genius
-song = genius.search_song(title, artist)
-if song:
-    lyrics = song.lyrics
-    print("Lirik ditemukan!")
+        # Cari lirik di Genius
+        song = genius.search_song(title, artist)
+        if song:
+            lyrics = song.lyrics
+            print(f"Lirik ditemukan untuk {file_path}!")
 
-    # Tambahkan lirik ke metadata file musik
-    audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
-    audio.save()
-    print("Lirik berhasil ditambahkan ke file musik!")
-else:
-    print("Lirik tidak ditemukan.")
+            # Tambahkan lirik ke metadata file musik
+            audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
+            audio.save()
+            print(f"Lirik berhasil ditambahkan ke {file_path}!")
+        else:
+            print(f"Lirik tidak ditemukan untuk {title} - {artist}.")
+    except Exception as e:
+        print(f"Error memproses {file_path}: {e}")
 EOF
 }
 # }}}
