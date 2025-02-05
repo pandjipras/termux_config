@@ -24,6 +24,67 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 
 # dibawah ini function yg di fold menggunakan vim-polygot
 
+# {{{ spotipy
+add_lyrics_to_song() {
+    if [[ -z "$1" ]]; then
+        echo "Gunakan: add_lyrics_to_song <file_mp3>"
+        return 1
+    fi
+
+    python3 <<EOF
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+from lyricsgenius import Genius
+from mutagen.id3 import ID3, USLT
+import sys
+
+# Spotify API Credentials
+SPOTIFY_CLIENT_ID = 'SPOTIFY_CLIENT_ID_ANDA'
+SPOTIFY_CLIENT_SECRET = 'SPOTIFY_CLIENT_SECRET_ANDA'
+
+# Genius API Key
+GENIUS_API_KEY = 'GENIUS_API_KEY_ANDA'
+
+# Inisialisasi Spotify API
+sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID,
+                                                           client_secret=SPOTIFY_CLIENT_SECRET))
+
+# Inisialisasi Genius API
+genius = Genius(GENIUS_API_KEY)
+
+# Path file musik dari argumen Zsh
+file_path = sys.argv[1]
+
+# Baca metadata file musik
+audio = ID3(file_path)
+
+# Ambil judul dan artis dari metadata
+title = audio.get("TIT2").text[0] if "TIT2" in audio else None
+artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
+
+if not title or not artist:
+    print("Judul atau artis tidak ditemukan di metadata file.")
+    sys.exit(1)
+
+print(f"Mencari lirik untuk: {title} - {artist}")
+
+# Cari lirik di Genius
+song = genius.search_song(title, artist)
+if song:
+    lyrics = song.lyrics
+    print("Lirik ditemukan!")
+
+    # Tambahkan lirik ke metadata file musik
+    audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
+    audio.save()
+    print("Lirik berhasil ditambahkan ke file musik!")
+else:
+    print("Lirik tidak ditemukan.")
+EOF
+}
+
+# }}}
+
 # {{{ yt4cut 
 yt4cut() {
     if [ $# -lt 3 ]; then
