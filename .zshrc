@@ -56,13 +56,16 @@ def bersihkan_lirik(lirik, judul):
     lirik = re.sub(r"You might also like.*", "", lirik, flags=re.DOTALL)
     lirik = re.sub(r"Contributors.*", "", lirik, flags=re.DOTALL)
 
-    # Pastikan baris pertama hanya berisi judul lagu
+    # Pisahkan lirik menjadi baris-baris
     lines = lirik.strip().split("\n")
 
+    # Pastikan tidak ada baris pertama yang tidak diinginkan
     if lines and judul.lower() in lines[0].lower():
-        lines[0] = judul  # Pastikan judul lagu tetap benar
+        lines.pop(0)
 
-    return "\n".join(lines).strip()
+    # Format lirik dengan tambahan "Lirik: [Judul Lagu]"
+    lirik_baru = f"Lirik: {judul}\n\n" + "\n".join(lines).strip()
+    return lirik_baru
 
 for file_path in mp3_files:
     try:
