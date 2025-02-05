@@ -142,7 +142,7 @@ get_lyrics_from_musixmatch() {
     title=$1
     artist=$2
     
-    search_url="$BASE_URL"track.search?q_track="$title"&q_artist="$artist"&apikey="$MUSIXMATCH_API_KEY"&page_size=1
+    search_url="${BASE_URL}track.search?q_track=${title}&q_artist=${artist}&apikey=${MUSIXMATCH_API_KEY}&page_size=1"
     response=$(curl -s "$search_url")
     
     track_id=$(echo "$response" | jq -r '.message.body.track_list[0].track.track_id')
