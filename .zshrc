@@ -57,7 +57,7 @@ for file_path in mp3_files:
         artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
 
         if not title or not artist:
-            print(f"Skipping {file_path}: Judul atau artis tidak ditemukan.\n")
+            print(f"Skipping {file_path}: Judul atau artis tidak ditemukan. ❌\n")
             continue
 
         print(f"Mencari lirik untuk: {title} - {artist}")
@@ -65,15 +65,15 @@ for file_path in mp3_files:
         song = genius.search_song(title, artist)
         if song:
             lyrics = song.lyrics
-            print(f"Lirik ditemukan untuk {title}!")
+            print(f"Lirik ditemukan untuk {title}! ✅")
 
             audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
             audio.save()
-            print(f"Lirik berhasil ditambahkan ke {file_path}! √\n")  # Tambah √ dan baris kosong
+            print(f"Lirik berhasil ditambahkan ke {file_path}! ✅\n")
         else:
-            print(f"Lirik tidak ditemukan untuk {title}.\n")  # Tambah baris kosong
+            print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
     except Exception as e:
-        print(f"Error memproses {file_path}: {e}\n")  # Tambah baris kosong
+        print(f"Error memproses {file_path}: {e} ❌\n")
 EOF
 }
 
