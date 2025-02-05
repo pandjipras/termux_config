@@ -258,7 +258,7 @@ resistor_color_code() {
     local color3=${colors[$exponent]}
     
     echo "Warna gelang resistor untuk $ohm_str Ω:"
-    echo "1️⃣ $color1 | 2️⃣ $color2 | 3️⃣ $color3 (Multiplier)"
+    echo "$color1 | $color2 | $color3 (Multiplier)"
 }
 # }}}
 
