@@ -59,11 +59,11 @@ def bersihkan_lirik(lirik, judul):
     # Pisahkan lirik menjadi baris-baris
     lines = lirik.strip().split("\n")
 
-    # Pastikan tidak ada baris pertama yang tidak diinginkan
+    # Jika baris pertama mengandung judul lagu, hapus
     if lines and judul.lower() in lines[0].lower():
         lines.pop(0)
 
-    # Format lirik dengan tambahan "Lirik: [Judul Lagu]"
+    # Pastikan "[Verse 1]" dan bagian lirik lainnya tetap ada
     lirik_baru = f"Lirik: {judul}\n\n" + "\n".join(lines).strip()
     return lirik_baru
 
