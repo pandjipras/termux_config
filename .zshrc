@@ -57,7 +57,7 @@ for file_path in mp3_files:
         artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
 
         if not title or not artist:
-            print(f"Skipping {file_path}: Judul atau artis tidak ditemukan.")
+            print(f"Skipping {file_path}: Judul atau artis tidak ditemukan.\n")
             continue
 
         print(f"Mencari lirik untuk: {title} - {artist}")
@@ -69,11 +69,11 @@ for file_path in mp3_files:
 
             audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
             audio.save()
-            print(f"Lirik berhasil ditambahkan ke {file_path}!")
+            print(f"Lirik berhasil ditambahkan ke {file_path}! √\n")  # Tambah √ dan baris kosong
         else:
-            print(f"Lirik tidak ditemukan untuk {title}.")
+            print(f"Lirik tidak ditemukan untuk {title}.\n")  # Tambah baris kosong
     except Exception as e:
-        print(f"Error memproses {file_path}: {e}")
+        print(f"Error memproses {file_path}: {e}\n")  # Tambah baris kosong
 EOF
 }
 
