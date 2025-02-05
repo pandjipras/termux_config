@@ -224,6 +224,41 @@ resistor_calc() {
     fi
 
     echo "Rekomendasi watt resistor: $Resistor_Watt"
+
+    # Menampilkan warna gelang resistor
+    resistor_color_code "$R"
+}
+
+resistor_color_code() {
+    local resistance=$(printf "%.0f" "$1")  # Bulatkan ke bilangan bulat
+    local ohm_str=$(echo "$resistance" | sed 's/000$/k/' | sed 's/000000$/M/')
+    
+    # Pisahkan digit pertama dan kedua
+    local first_digit=${resistance:0:1}
+    local second_digit=${resistance:1:1}
+    
+    # Hitung jumlah nol di belakang (eksponen)
+    local exponent=0
+    while [[ "$resistance" == *0 ]]; do
+        resistance=${resistance%0}
+        ((exponent++))
+    done
+
+    # Warna gelang resistor (0-9 dan eksponen)
+    local colors=(Black Brown Red Orange Yellow Green Blue Violet Gray White)
+
+    # Cek jika angka hanya satu digit
+    if [[ -z "$second_digit" ]]; then
+        second_digit=0
+    fi
+
+    # Konversi angka ke warna
+    local color1=${colors[$first_digit]}
+    local color2=${colors[$second_digit]}
+    local color3=${colors[$exponent]}
+    
+    echo "Warna gelang resistor untuk $ohm_str Ω:"
+    echo "1️⃣ $color1 | 2️⃣ $color2 | 3️⃣ $color3 (Multiplier)"
 }
 # }}}
 
