@@ -111,7 +111,7 @@ from musixmatch import Musixmatch
 from mutagen.id3 import ID3, USLT
 
 # Musixmatch API Key
-MUSIXMATCH_API_KEY = ea0wjot51y3ivbo4g8ea04bi2szy4fka
+MUSIXMATCH_API_KEY = 'ea0wjot51y3ivbo4g8ea04bi2szy4fka'
 
 # Inisialisasi Musixmatch API
 musixmatch = Musixmatch(MUSIXMATCH_API_KEY)
