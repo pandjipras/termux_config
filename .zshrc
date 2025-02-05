@@ -98,88 +98,82 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 
 # {{{ musixmatch lyric finder
 # ea0wjot51y3ivbo4g8ea04bi2szy4fka
-add_lyrics_to_songs() {
-    if [[ -z $(ls *.mp3 2>/dev/null) ]]; then
+musixmatch_lyrics() {
+    # API Key Musixmatch (Ganti dengan API Key Anda)
+    MUSIXMATCH_API_KEY="ea0wjot51y3ivbo4g8ea04bi2szy4fka"
+    BASE_URL="https://api.musixmatch.com/ws/1.1/"
+    
+    # Cek apakah ada file .mp3 di folder saat ini
+    if ! ls *.mp3 > /dev/null 2>&1; then
         echo "Tidak ada file MP3 di folder saat ini."
-        return 1
+        return
     fi
 
-    python3 <<EOF
-import os
-import re
-from musixmatch import Musixmatch
-from mutagen.id3 import ID3, USLT
+    for file in *.mp3; do
+        # Ambil metadata dari file mp3
+        title=$(mutagen-info "$file" | grep -i "Title" | sed 's/Title\s*//')
+        artist=$(mutagen-info "$file" | grep -i "Artist" | sed 's/Artist\s*//')
 
-# Musixmatch API Key
-MUSIXMATCH_API_KEY = 'ea0wjot51y3ivbo4g8ea04bi2szy4fka'
+        if [ -z "$title" ] || [ -z "$artist" ]; then
+            echo "Skipping $file: Judul atau artis tidak ditemukan. ❌"
+            continue
+        fi
 
-# Inisialisasi Musixmatch API
-musixmatch = Musixmatch(MUSIXMATCH_API_KEY)
+        echo "Mencari lirik untuk: $title - $artist"
 
-# Fungsi untuk mencari lirik dari Musixmatch API dan menambahkannya ke file musik
-def add_lyrics_to_songs():
-    if not any(f.endswith('.mp3') for f in os.listdir()):
-        print("Tidak ada file MP3 di folder saat ini.")
-        return
-
-    mp3_files = [f for f in os.listdir() if f.endswith('.mp3')]
-
-    for file_path in mp3_files:
-        try:
-            audio = ID3(file_path)
-            title = audio.get("TIT2").text[0] if "TIT2" in audio else None
-            artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
-
-            if not title or not artist:
-                print(f"Skipping {file_path}: Judul atau artis tidak ditemukan. ❌\n")
-                continue
-
-            print(f"Mencari lirik untuk: {title} - {artist}")
-
-            # Cari lirik menggunakan Musixmatch API
-            track_info = musixmatch.matcher_song_get(title, artist)
-            if track_info['message']['header']['status_code'] == 200:
-                lyrics_body = track_info['message']['body']
-                if 'lyrics' in lyrics_body:
-                    lyrics = lyrics_body['lyrics']['lyrics_body']
-                    print(f"Lirik ditemukan untuk {title}! ✅")
-                    
-                    # Bersihkan lirik (hilangkan "Contributor" dan teks lainnya)
-                    lyrics = bersihkan_lirik(lyrics, title)
-                    
-                    # Menambahkannya ke metadata file musik
-                    audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
-                    audio.save()
-                    print(f"Lirik berhasil ditambahkan ke {file_path}! ✅\n")
-                else:
-                    print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
-            else:
-                print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
-
-        except Exception as e:
-            print(f"Error memproses {file_path}: {e} ❌\n")
-
-# Fungsi untuk membersihkan lirik dan menghapus bagian yang tidak relevan
-def bersihkan_lirik(lirik, judul):
-    # Hapus bagian "You might also like" dan "Contributors"
-    lirik = re.sub(r"You might also like.*", "", lirik, flags=re.DOTALL)
-    lirik = re.sub(r"Contributors.*", "", lirik, flags=re.DOTALL)
-
-    # Pisahkan lirik menjadi baris-baris
-    lines = lirik.strip().split("\n")
-
-    # Pastikan baris pertama adalah judul lagu dan hapus jika ada
-    if lines and judul.lower() in lines[0].lower():
-        lines.pop(0)
-
-    # Format lirik dengan tambahan "Lirik: [Judul Lagu]"
-    lirik_baru = f"Lirik: {judul}\n\n" + "\n".join(lines).strip()
-    return lirik_baru
-
-# Jalankan fungsi untuk menambahkan lirik
-add_lyrics_to_songs()
-EOF
+        # Cari lirik menggunakan Musixmatch API
+        lyrics=$(get_lyrics_from_musixmatch "$title" "$artist")
+        
+        if [ -n "$lyrics" ]; then
+            echo "Lirik ditemukan untuk $file! ✅"
+            cleaned_lyrics=$(bersihkan_lirik "$lyrics" "$title")
+            
+            # Menambahkan lirik ke file MP3 menggunakan mutagen
+            echo "$cleaned_lyrics" | mutagen-id3 --set "USLT::eng" "$file"
+            echo "Lirik berhasil ditambahkan ke $file! ✅"
+        else
+            echo "Lirik tidak ditemukan untuk $file. ❌"
+        fi
+        echo ""
+    done
 }
+
+get_lyrics_from_musixmatch() {
+    title=$1
+    artist=$2
+    
+    search_url="$BASE_URL"track.search?q_track="$title"&q_artist="$artist"&apikey="$MUSIXMATCH_API_KEY"&page_size=1
+    response=$(curl -s "$search_url")
+    
+    track_id=$(echo "$response" | jq -r '.message.body.track_list[0].track.track_id')
+    
+    if [ "$track_id" != "null" ]; then
+        lyrics_url="$BASE_URL"track.lyrics.get?track_id="$track_id"&apikey="$MUSIXMATCH_API_KEY"
+        lyrics_response=$(curl -s "$lyrics_url")
+        
+        lyrics=$(echo "$lyrics_response" | jq -r '.message.body.lyrics.lyrics_body')
+        echo "$lyrics"
+    else
+        echo ""
+    fi
+}
+
+bersihkan_lirik() {
+    lirik=$1
+    judul=$2
+    
+    # Hapus bagian "You might also like" dan "Contributors"
+    cleaned_lirik=$(echo "$lirik" | sed -e 's/You might also like.*//g' -e 's/Contributors.*//g')
+    
+    # Pisahkan lirik menjadi baris-baris
+    lines=$(echo "$cleaned_lirik" | sed 's/\r//' | awk NF)
+    
+    # Format lirik dengan tambahan "Lirik: [Judul Lagu]"
+    echo "Lirik: $judul"
+    echo ""
+    echo "$lines"
+}
+
 # }}}
 
 # {{{ yt4cut 
