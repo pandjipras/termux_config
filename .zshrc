@@ -32,22 +32,12 @@ add_lyrics_to_song() {
     fi
 
     python3 <<EOF
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
 import sys
 
-# Spotify API Credentials
-SPOTIFY_CLIENT_ID = 'SPOTIFY_CLIENT_ID_ANDA'
-SPOTIFY_CLIENT_SECRET = 'SPOTIFY_CLIENT_SECRET_ANDA'
-
 # Genius API Key
-GENIUS_API_KEY = 'GENIUS_API_KEY_ANDA'
-
-# Inisialisasi Spotify API
-sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID,
-                                                           client_secret=SPOTIFY_CLIENT_SECRET))
+GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
@@ -82,7 +72,6 @@ else:
     print("Lirik tidak ditemukan.")
 EOF
 }
-
 # }}}
 
 # {{{ yt4cut 
