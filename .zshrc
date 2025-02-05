@@ -38,7 +38,7 @@ from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
 
 # Genius API Key
-GENIUS_API_KEY = 'GENIUS_API_KEY_ANDA'
+GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
