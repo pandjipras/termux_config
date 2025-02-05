@@ -25,8 +25,8 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 # dibawah ini function yg di fold menggunakan vim-polygot
 
 # {{{ spotipy
+# 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 add_lyrics_to_songs() {
-    # Pastikan ada file MP3 di folder saat ini
     if [[ -z $(ls *.mp3 2>/dev/null) ]]; then
         echo "Tidak ada file MP3 di folder saat ini."
         return 1
@@ -38,12 +38,12 @@ from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
 
 # Genius API Key
-GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
+GENIUS_API_KEY = 'GENIUS_API_KEY_ANDA'
 
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
+genius.verbose = False  # Menonaktifkan log pencarian bawaan
 
-# Ambil semua file MP3 di folder saat ini
 mp3_files = [f for f in os.listdir() if f.endswith(".mp3")]
 
 if not mp3_files:
@@ -52,7 +52,6 @@ if not mp3_files:
 
 for file_path in mp3_files:
     try:
-        # Baca metadata file musik
         audio = ID3(file_path)
         title = audio.get("TIT2").text[0] if "TIT2" in audio else None
         artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
@@ -63,22 +62,21 @@ for file_path in mp3_files:
 
         print(f"Mencari lirik untuk: {title} - {artist}")
 
-        # Cari lirik di Genius
         song = genius.search_song(title, artist)
         if song:
             lyrics = song.lyrics
-            print(f"Lirik ditemukan untuk {file_path}!")
+            print(f"Lirik ditemukan untuk {title}!")
 
-            # Tambahkan lirik ke metadata file musik
             audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
             audio.save()
             print(f"Lirik berhasil ditambahkan ke {file_path}!")
         else:
-            print(f"Lirik tidak ditemukan untuk {title} - {artist}.")
+            print(f"Lirik tidak ditemukan untuk {title}.")
     except Exception as e:
         print(f"Error memproses {file_path}: {e}")
 EOF
 }
+
 # }}}
 
 # {{{ yt4cut 
