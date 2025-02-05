@@ -24,8 +24,8 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 
 # dibawah ini function yg di fold menggunakan vim-polygot
 
- {{{ genius lyric finder
-# 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
+ #{{{ genius lyric finder
+## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 genius_lyric() {
     if [[ -z $(ls *.mp3 2>/dev/null) ]]; then
         echo "Tidak ada file MP3 di folder saat ini."
@@ -94,7 +94,7 @@ for file_path in mp3_files:
 EOF
 }
 
-# }}}
+## }}}
 
 # {{{ yt4cut 
 yt4cut() {
