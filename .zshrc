@@ -183,82 +183,38 @@ songcut() {
 # }}}
 
 # {{{ resistor_calc
-resistor_calc() {
-    if [[ $# -ne 3 ]]; then
-        echo "Penggunaan: resistor_calc <Vin> <Vout> <Arus dalam Ampere>"
-        echo "Contoh: resistor_calc 12 5 0.5"
-        return 1
-    fi
-
-    local Vin=$1
-    local Vout=$2
-    local I=$3
-
-    if (( $(echo "$I == 0" | bc -l) )); then
-        echo "Error: Arus tidak boleh 0"
-        return 1
-    fi
-
-    local Vdrop=$(echo "$Vin - $Vout" | bc -l)
-    local R=$(echo "scale=2; $Vdrop / $I" | bc -l)
-    local P=$(echo "scale=2; $Vdrop * $I" | bc -l)
-
-    printf "Resistor yang dibutuhkan: %.2f Ohm\n" "$R"
-    printf "Daya yang harus ditahan resistor: %.2f Watt\n" "$P"
-
-    # Menentukan watt resistor minimal (2x dari daya yang dihitung)
-    if (( $(echo "$P <= 0.125" | bc -l) )); then
-        Resistor_Watt="Gunakan ¼ Watt atau lebih"
-    elif (( $(echo "$P <= 0.25" | bc -l) )); then
-        Resistor_Watt="Gunakan ½ Watt atau lebih"
-    elif (( $(echo "$P <= 0.5" | bc -l) )); then
-        Resistor_Watt="Gunakan 1 Watt atau lebih"
-    elif (( $(echo "$P <= 1" | bc -l) )); then
-        Resistor_Watt="Gunakan 2 Watt atau lebih"
-    elif (( $(echo "$P <= 3" | bc -l) )); then
-        Resistor_Watt="Gunakan 5 Watt (resistor kapur) atau lebih"
-    elif (( $(echo "$P <= 10" | bc -l) )); then
-        Resistor_Watt="Gunakan 10 Watt (resistor aluminium) atau lebih"
-    else
-        Resistor_Watt="Gunakan resistor di atas 10 Watt dan pertimbangkan pendingin"
-    fi
-
-    echo "Rekomendasi watt resistor: $Resistor_Watt"
-
-    # Menampilkan warna gelang resistor
-    resistor_color_code "$R"
-}
-
 resistor_color_code() {
     local resistance=$(printf "%.0f" "$1")  # Bulatkan ke bilangan bulat
-    local ohm_str=$(echo "$resistance" | sed 's/000$/k/' | sed 's/000000$/M/')
-    
-    # Pisahkan digit pertama dan kedua
+
+    # Tentukan warna untuk dua digit pertama
     local first_digit=${resistance:0:1}
     local second_digit=${resistance:1:1}
-    
-    # Hitung jumlah nol di belakang (eksponen)
-    local exponent=0
-    while [[ "$resistance" == *0 ]]; do
-        resistance=${resistance%0}
-        ((exponent++))
-    done
 
-    # Warna gelang resistor (0-9 dan eksponen)
-    local colors=(Black Brown Red Orange Yellow Green Blue Violet Gray White)
-
-    # Cek jika angka hanya satu digit
+    # Jika hanya satu digit, tambahkan 0 di belakang
     if [[ -z "$second_digit" ]]; then
         second_digit=0
     fi
 
+    # Hitung multiplier (jumlah digit setelah dua angka pertama)
+    local multiplier=$(( ${#resistance} - 2 ))
+    
+    # Jika nilai di bawah 10Ω, gunakan multiplier 0 (×1)
+    if (( resistance < 10 )); then
+        first_digit=${resistance:0:1}
+        second_digit=0
+        multiplier=0
+    fi
+
+    # Warna gelang resistor (0-9 dan eksponen)
+    local colors=(Black Brown Red Orange Yellow Green Blue Violet Gray White)
+
     # Konversi angka ke warna
     local color1=${colors[$first_digit]}
     local color2=${colors[$second_digit]}
-    local color3=${colors[$exponent]}
+    local color3=${colors[$multiplier]}
     
-    echo "Warna gelang resistor untuk $ohm_str Ω:"
-    echo "$color1 | $color2 | $color3 (Multiplier)"
+    echo "Warna gelang resistor untuk ${resistance}Ω:"
+    echo "1️⃣ $color1 | 2️⃣ $color2 | 3️⃣ $color3 (Multiplier)"
 }
 # }}}
 
