@@ -34,6 +34,7 @@ add_lyrics_to_songs() {
 
     python3 <<EOF
 import os
+import re
 from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
 
@@ -50,6 +51,19 @@ if not mp3_files:
     print("Tidak ada file MP3 untuk diproses.")
     exit(1)
 
+def bersihkan_lirik(lirik, judul):
+    # Hapus bagian "You might also like" dan "Contributors"
+    lirik = re.sub(r"You might also like.*", "", lirik, flags=re.DOTALL)
+    lirik = re.sub(r"Contributors.*", "", lirik, flags=re.DOTALL)
+
+    # Pastikan baris pertama hanya berisi judul lagu
+    lines = lirik.strip().split("\n")
+
+    if lines and judul.lower() in lines[0].lower():
+        lines[0] = judul  # Pastikan judul lagu tetap benar
+
+    return "\n".join(lines).strip()
+
 for file_path in mp3_files:
     try:
         audio = ID3(file_path)
@@ -64,7 +78,7 @@ for file_path in mp3_files:
 
         song = genius.search_song(title, artist)
         if song:
-            lyrics = song.lyrics
+            lyrics = bersihkan_lirik(song.lyrics, title)
             print(f"Lirik ditemukan untuk {title}! ✅")
 
             audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
