@@ -26,52 +26,74 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 
  #{{{ genius lyric finder
 ## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
-add_lyrics_to_songs() {
-    if [[ -z $(ls *.mp3 2>/dev/null) ]]; then
-        echo "Tidak ada file MP3 di folder saat ini."
-        return 1
+lyric_finder() {
+    local file="$1"
+
+    if [[ -z "$file" ]]; then
+        # Jika tidak ada argumen, proses semua file MP3 & FLAC di folder
+        local files=($(ls | grep -E '\.(mp3|flac)$' 2>/dev/null))
+        
+        if [[ ${#files[@]} -eq 0 ]]; then
+            echo "Tidak ada file MP3 atau FLAC di folder saat ini."
+            return 1
+        fi
+    else
+        # Jika ada argumen, hanya proses file yang disebutkan
+        if [[ -f "$file" && ("$file" == *.mp3 || "$file" == *.flac) ]]; then
+            local files=("$file")
+        else
+            echo "File \"$file\" tidak ditemukan atau bukan format MP3/FLAC."
+            return 1
+        fi
     fi
 
     python3 <<EOF
 import os
 import re
+import sys
 from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
+from mutagen.flac import FLAC
 
-# Genius API Key
-GENIUS_API_KEY = 'GENIUS_API_KEY_ANDA'
+# API Key Genius (simpan dalam variabel lingkungan untuk keamanan)
+GENIUS_API_KEY = os.getenv("GENIUS_API_KEY", "txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq")
 
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
 genius.verbose = False  # Menonaktifkan log pencarian bawaan
 
-mp3_files = [f for f in os.listdir() if f.endswith(".mp3")]
-
-if not mp3_files:
-    print("Tidak ada file MP3 untuk diproses.")
-    exit(1)
+# Ambil file dari Zsh
+music_files = sys.argv[1:]
 
 def bersihkan_lirik(lirik, judul):
-    # Hapus bagian "You might also like" dan "Contributors"
+    """Menghapus bagian yang tidak relevan dari lirik dan mempertahankan format yang benar."""
     lirik = re.sub(r"You might also like.*", "", lirik, flags=re.DOTALL)
     lirik = re.sub(r"Contributors.*", "", lirik, flags=re.DOTALL)
 
     # Pisahkan lirik menjadi baris-baris
     lines = lirik.strip().split("\n")
 
-    # Pastikan baris pertama adalah judul lagu dan hapus jika ada
+    # Hapus judul lagu jika berada di baris pertama
     if lines and judul.lower() in lines[0].lower():
         lines.pop(0)
 
-    # Format lirik dengan tambahan "Lirik: [Judul Lagu]"
-    lirik_baru = f"Lirik: {judul}\n\n" + "\n".join(lines).strip()
-    return lirik_baru
+    return f"Lirik: {judul}\n\n" + "\n".join(lines).strip()
 
-for file_path in mp3_files:
+for file_path in music_files:
     try:
-        audio = ID3(file_path)
-        title = audio.get("TIT2").text[0] if "TIT2" in audio else None
-        artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
+        # Deteksi format file
+        is_mp3 = file_path.lower().endswith(".mp3")
+        is_flac = file_path.lower().endswith(".flac")
+
+        # Ambil metadata berdasarkan format file
+        if is_mp3:
+            audio = ID3(file_path)
+            title = audio.get("TIT2").text[0] if "TIT2" in audio else None
+            artist = audio.get("TPE1").text[0] if "TPE1" in audio else None
+        elif is_flac:
+            audio = FLAC(file_path)
+            title = audio["TITLE"][0] if "TITLE" in audio else None
+            artist = audio["ARTIST"][0] if "ARTIST" in audio else None
 
         if not title or not artist:
             print(f"Skipping {file_path}: Judul atau artis tidak ditemukan. ❌\n")
@@ -84,14 +106,19 @@ for file_path in mp3_files:
             lyrics = bersihkan_lirik(song.lyrics, title)
             print(f"Lirik ditemukan untuk {title}! ✅")
 
-            audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
-            audio.save()
+            if is_mp3:
+                audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=lyrics)
+                audio.save()
+            elif is_flac:
+                audio["LYRICS"] = lyrics
+                audio.save()
+
             print(f"Lirik berhasil ditambahkan ke {file_path}! ✅\n")
         else:
             print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
     except Exception as e:
         print(f"Error memproses {file_path}: {e} ❌\n")
-EOF
+EOF "${files[@]}"
 }
 
 ## }}}
