@@ -47,7 +47,7 @@ lyric_finder() {
         fi
     fi
 
-    python3 <<EOF
+    python3 - << 'EOF'
 import os
 import re
 import sys
@@ -55,12 +55,12 @@ from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
 from mutagen.flac import FLAC
 
-# API Key Genius (simpan dalam variabel lingkungan untuk keamanan)
+# API Key Genius
 GENIUS_API_KEY = os.getenv("GENIUS_API_KEY", "txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq")
 
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
-genius.verbose = False  # Menonaktifkan log pencarian bawaan
+genius.verbose = False  # Menonaktifkan log bawaan Genius
 
 # Ambil file dari Zsh
 music_files = sys.argv[1:]
@@ -118,7 +118,7 @@ for file_path in music_files:
             print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
     except Exception as e:
         print(f"Error memproses {file_path}: {e} ❌\n")
-EOF "${files[@]}"
+EOF
 }
 
 ## }}}
