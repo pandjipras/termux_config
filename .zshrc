@@ -28,7 +28,9 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 ## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 lyric_finder() {
     # Cek apakah ada file MP3 atau FLAC di folder
-    if [[ -z $(find . -maxdepth 1 -type f -iname "*.mp3" -o -iname "*.flac") ]]; then
+    local files=($(ls | grep -E '\.(mp3|flac)$' 2>/dev/null))
+
+    if [[ ${#files[@]} -eq 0 ]]; then
         echo "Tidak ada file MP3 atau FLAC di folder saat ini."
         return 1
     fi
