@@ -27,34 +27,43 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
  #{{{ genius lyric finder
 ## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 lyric_finder() {
-    # Cek apakah ada file MP3 atau FLAC di folder
-    local files=($(ls | grep -E '\.(mp3|flac)$' 2>/dev/null))
+    local file="$1"
 
-    if [[ ${#files[@]} -eq 0 ]]; then
-        echo "Tidak ada file MP3 atau FLAC di folder saat ini."
-        return 1
+    if [[ -z "$file" ]]; then
+        # Jika tidak ada argumen, proses semua file MP3 & FLAC di folder
+        local files=($(ls | grep -E '\.(mp3|flac)$' 2>/dev/null))
+        
+        if [[ ${#files[@]} -eq 0 ]]; then
+            echo "Tidak ada file MP3 atau FLAC di folder saat ini."
+            return 1
+        fi
+    else
+        # Jika ada argumen, hanya proses file yang disebutkan
+        if [[ -f "$file" && ("$file" == *.mp3 || "$file" == *.flac) ]]; then
+            local files=("$file")
+        else
+            echo "File \"$file\" tidak ditemukan atau bukan format MP3/FLAC."
+            return 1
+        fi
     fi
 
     python3 <<EOF
 import os
 import re
+import sys
 from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
 from mutagen.flac import FLAC
 
-# Genius API Key
-GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
+# API Key Genius (simpan dalam variabel lingkungan untuk keamanan)
+GENIUS_API_KEY = os.getenv("GENIUS_API_KEY", "txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq")
 
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
 genius.verbose = False  # Menonaktifkan log pencarian bawaan
 
-# Ambil semua file MP3 dan FLAC di direktori saat ini
-music_files = [f for f in os.listdir() if f.lower().endswith((".mp3", ".flac"))]
-
-if not music_files:
-    print("Tidak ada file musik untuk diproses.")
-    exit(1)
+# Ambil file dari Zsh
+music_files = sys.argv[1:]
 
 def bersihkan_lirik(lirik, judul):
     """Menghapus bagian yang tidak relevan dari lirik dan mempertahankan format yang benar."""
@@ -109,7 +118,7 @@ for file_path in music_files:
             print(f"Lirik tidak ditemukan untuk {title}. ❌\n")
     except Exception as e:
         print(f"Error memproses {file_path}: {e} ❌\n")
-EOF
+EOF "${files[@]}"
 }
 ## }}}
 
