@@ -27,14 +27,16 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
  #{{{ genius lyric finder
 ## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 lyric_finder() {
-    echo "Mencari file MP3 dan FLAC di folder saat ini..."
+    echo "Mencari file MP3 atau FLAC di folder saat ini..."
     
-    # Cari file MP3 atau FLAC di folder saat ini
-    files=(*.mp3 *.flac)
-    
+    # Cari file MP3 dan FLAC yang ada di folder saat ini
+    files=()
+    [[ -n $(ls *.mp3 2>/dev/null) ]] && files+=(*.mp3)
+    [[ -n $(ls *.flac 2>/dev/null) ]] && files+=(*.flac)
+
     # Jika tidak ada file ditemukan
-    if [[ ${#files[@]} -eq 0 || ( ${#files[@]} -eq 1 && ${files[0]} == "*.mp3" ) || ( ${#files[@]} -eq 1 && ${files[0]} == "*.flac" ) ]]; then
-        echo "Tidak ada file MP3 atau FLAC di folder saat ini."
+    if [[ ${#files[@]} -eq 0 ]]; then
+        echo "❌ Tidak ada file MP3 atau FLAC di folder saat ini."
         return
     fi
 
