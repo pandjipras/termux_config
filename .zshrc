@@ -26,8 +26,9 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
 
  #{{{ genius lyric finder
 ## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
-add_lyrics_to_songs() {
-    if [[ -z $(ls *.mp3 *.flac 2>/dev/null) ]]; then
+lyric_finder() {
+    # Cek apakah ada file MP3 atau FLAC di folder
+    if [[ -z $(find . -maxdepth 1 -type f -iname "*.mp3" -o -iname "*.flac") ]]; then
         echo "Tidak ada file MP3 atau FLAC di folder saat ini."
         return 1
     fi
@@ -38,17 +39,16 @@ import re
 from lyricsgenius import Genius
 from mutagen.id3 import ID3, USLT
 from mutagen.flac import FLAC
-from mutagen.flac import Picture
 
 # Genius API Key
-GENIUS_API_KEY = 'GENIUS_API_KEY_ANDA'
+GENIUS_API_KEY = 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 
 # Inisialisasi Genius API
 genius = Genius(GENIUS_API_KEY)
 genius.verbose = False  # Menonaktifkan log pencarian bawaan
 
 # Ambil semua file MP3 dan FLAC di direktori saat ini
-music_files = [f for f in os.listdir() if f.endswith((".mp3", ".flac"))]
+music_files = [f for f in os.listdir() if f.lower().endswith((".mp3", ".flac"))]
 
 if not music_files:
     print("Tidak ada file musik untuk diproses.")
@@ -71,8 +71,8 @@ def bersihkan_lirik(lirik, judul):
 for file_path in music_files:
     try:
         # Deteksi format file
-        is_mp3 = file_path.endswith(".mp3")
-        is_flac = file_path.endswith(".flac")
+        is_mp3 = file_path.lower().endswith(".mp3")
+        is_flac = file_path.lower().endswith(".flac")
 
         # Ambil metadata berdasarkan format file
         if is_mp3:
@@ -109,7 +109,6 @@ for file_path in music_files:
         print(f"Error memproses {file_path}: {e} ❌\n")
 EOF
 }
-
 ## }}}
 
 # {{{ yt4cut 
