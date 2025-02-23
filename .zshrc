@@ -27,74 +27,68 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
  #{{{ genius lyric finder
 ## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 lyric_finder() {
-    echo "Mencari file MP3 atau FLAC di folder saat ini..."
-    
-    # Cari file MP3 dan FLAC yang ada di folder saat ini
-    files=()
-    [[ -n $(ls *.mp3 2>/dev/null) ]] && files+=(*.mp3)
-    [[ -n $(ls *.flac 2>/dev/null) ]] && files+=(*.flac)
+    # Jika ada argumen, gunakan file itu, jika tidak cari semua MP3/FLAC
+    if [[ $# -gt 0 ]]; then
+        files=("$@")
+    else
+        echo "Mencari file MP3 atau FLAC di folder saat ini..."
+        files=()
+        [[ -n $(ls *.mp3 2>/dev/null) ]] && files+=(*.mp3)
+        [[ -n $(ls *.flac 2>/dev/null) ]] && files+=(*.flac)
 
-    # Jika tidak ada file ditemukan
-    if [[ ${#files[@]} -eq 0 ]]; then
-        echo "❌ Tidak ada file MP3 atau FLAC di folder saat ini."
-        return
+        if [[ ${#files[@]} -eq 0 ]]; then
+            echo "❌ Tidak ada file MP3 atau FLAC di folder saat ini."
+            return
+        fi
     fi
 
-    echo "Menjalankan pencarian lirik..."
-    
     for file in "${files[@]}"; do
-        echo "Memproses: $file"
-        
+        [[ ! -f "$file" ]] && echo "❌ File tidak ditemukan: $file" && continue
+
+        echo "🔍 $file"
+
         python3 - <<EOF
 import os
 from mutagen.id3 import ID3, USLT
 from mutagen.flac import FLAC
 from lyricsgenius import Genius
 
-# API Genius
 GENIUS_API_KEY = "txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq"
-genius = Genius(GENIUS_API_KEY)
+genius = Genius(GENIUS_API_KEY, verbose=False)
 
 file_path = os.path.abspath("$file")
+ext = os.path.splitext(file_path)[1].lower()
 
-# Cek apakah file MP3 atau FLAC
-if file_path.endswith(".mp3"):
+if ext == ".mp3":
     audio = ID3(file_path)
-elif file_path.endswith(".flac"):
+elif ext == ".flac":
     audio = FLAC(file_path)
 else:
-    print(f"Format tidak dikenali: {file_path}")
+    print(f"❌ Format tidak dikenali: {file_path}")
     exit(1)
 
-# Ambil metadata
-title = audio["TIT2"].text[0] if "TIT2" in audio else None
-artist = audio["TPE1"].text[0] if "TPE1" in audio else None
+title = audio.get("TIT2", [None])[0]
+artist = audio.get("TPE1", [None])[0]
 
 if not title or not artist:
-    print(f"❌ Tidak bisa mendapatkan metadata: {file_path}\n")
+    print("❌ Metadata tidak lengkap.\n")
     exit(1)
 
-print(f"Mencari lirik untuk: {title} - {artist}")
-
-# Cari lirik
 song = genius.search_song(title, artist)
 if song:
-    lyrics = song.lyrics
+    lyrics = song.lyrics.split("\n")
+    lyrics = "\n".join(line for line in lyrics if "Contributors" not in line)
+    cleaned_lyrics = f"Lirik: {title}\n\n{lyrics}"
 
-    # Bersihkan bagian contributor
-    lines = lyrics.split("\n")
-    cleaned_lyrics = "Lirik: " + title + "\n\n" + "\n".join(line for line in lines if "Contributors" not in line)
-
-    # Tambahkan lirik ke metadata
-    if file_path.endswith(".mp3"):
+    if ext == ".mp3":
         audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=cleaned_lyrics)
-    elif file_path.endswith(".flac"):
+    elif ext == ".flac":
         audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=cleaned_lyrics)
 
     audio.save()
-    print(f"✅ Lirik berhasil ditambahkan ke {file_path}\n")
+    print(f"✅ Lirik ditambahkan!\n")
 else:
-    print(f"❌ Lirik tidak ditemukan untuk {title} - {artist}\n")
+    print(f"❌ Lirik tidak ditemukan.\n")
 EOF
     done
 }
