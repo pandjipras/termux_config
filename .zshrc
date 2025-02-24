@@ -44,6 +44,13 @@ lyric_finder() {
     for file in "${files[@]}"; do
         [[ ! -f "$file" ]] && echo "❌ File tidak ditemukan: $file" && continue
 
+        # Cek apakah ada file .lrc dengan nama yang sama
+        lrc_file="${file%.*}.lrc"
+        if [[ -f "$lrc_file" ]]; then
+            echo "⚠️  File lirik .lrc ditemukan, melewati $file...\n"
+            continue
+        fi
+
         echo "🔍 $file"
 
         python3 - <<EOF
