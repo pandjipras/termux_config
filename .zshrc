@@ -27,7 +27,6 @@ alias yt4="yt-dlp -f 'bestvideo[height<=1080]+bestaudio/best' --merge-output-for
  #{{{ genius lyric finder
 ## 'txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq'
 lyric_finder() {
-    # Jika ada argumen, gunakan file itu, jika tidak cari semua MP3/FLAC
     if [[ $# -gt 0 ]]; then
         files=("$@")
     else
@@ -50,7 +49,7 @@ lyric_finder() {
         python3 - <<EOF
 import os
 from mutagen.id3 import ID3, USLT
-from mutagen.flac import FLAC
+from mutagen.flac import FLAC, Picture
 from lyricsgenius import Genius
 
 GENIUS_API_KEY = "txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq"
@@ -61,14 +60,15 @@ ext = os.path.splitext(file_path)[1].lower()
 
 if ext == ".mp3":
     audio = ID3(file_path)
+    title = audio.get("TIT2", [None])[0]
+    artist = audio.get("TPE1", [None])[0]
 elif ext == ".flac":
     audio = FLAC(file_path)
+    title = audio.get("title", [None])[0] if "title" in audio else None
+    artist = audio.get("artist", [None])[0] if "artist" in audio else None
 else:
     print(f"❌ Format tidak dikenali: {file_path}")
     exit(1)
-
-title = audio.get("TIT2", [None])[0]
-artist = audio.get("TPE1", [None])[0]
 
 if not title or not artist:
     print("❌ Metadata tidak lengkap.\n")
@@ -83,7 +83,7 @@ if song:
     if ext == ".mp3":
         audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=cleaned_lyrics)
     elif ext == ".flac":
-        audio["USLT::'eng'"] = USLT(encoding=3, lang='eng', desc='Lyrics', text=cleaned_lyrics)
+        audio["LYRICS"] = cleaned_lyrics
 
     audio.save()
     print(f"✅ Lirik ditambahkan!\n")
