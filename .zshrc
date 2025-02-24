@@ -49,7 +49,7 @@ lyric_finder() {
         python3 - <<EOF
 import os
 from mutagen.id3 import ID3, USLT
-from mutagen.flac import FLAC, Picture
+from mutagen.flac import FLAC
 from lyricsgenius import Genius
 
 GENIUS_API_KEY = "txdYRAeqVAJdId7bd-R6P05TQZO40DHnYnU4mzo53Ar6woto4zIpM7XTnA536SVq"
@@ -58,22 +58,32 @@ genius = Genius(GENIUS_API_KEY, verbose=False)
 file_path = os.path.abspath("$file")
 ext = os.path.splitext(file_path)[1].lower()
 
+# Baca metadata berdasarkan format file
 if ext == ".mp3":
     audio = ID3(file_path)
     title = audio.get("TIT2", [None])[0]
     artist = audio.get("TPE1", [None])[0]
+    has_lyrics = "USLT::'eng'" in audio
 elif ext == ".flac":
     audio = FLAC(file_path)
     title = audio.get("title", [None])[0] if "title" in audio else None
     artist = audio.get("artist", [None])[0] if "artist" in audio else None
+    has_lyrics = "LYRICS" in audio
 else:
     print(f"❌ Format tidak dikenali: {file_path}")
     exit(1)
 
+# Skip jika metadata tidak lengkap
 if not title or not artist:
     print("❌ Metadata tidak lengkap.\n")
     exit(1)
 
+# Skip jika sudah ada lirik
+if has_lyrics:
+    print("⚠️  Lirik sudah ada, melewati...\n")
+    exit(0)
+
+# Cari lirik di Genius
 song = genius.search_song(title, artist)
 if song:
     lyrics = song.lyrics.split("\n")
